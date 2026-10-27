@@ -41,16 +41,20 @@ h1 {
   font-size: clamp(1.8rem, 3vw, 2.6rem);
   line-height: 1.15;
   letter-spacing: -.04em;
+  font-family: var(--h-font);
 }
 
 h2 {
-  font-size: 1.15rem;
+  font-size: 1.8rem;
   line-height: 1.4;
-  letter-spacing: -.02em;
+  letter-spacing: -.01em;
+  font-family: var(--h-font);
+  margin-bottom: 0px;
 }
 
 h3 {
   font-size: 1rem;
+  font-family: var(--h-font);
 }
 
 small,
@@ -98,9 +102,12 @@ small,
   align-items: center;
   gap: 20px;
   min-height: 76px;
-  padding: 18px 38px;
-  border-bottom: 1px solid var(--line);
-  background: var(--surface);
+  padding: 18px 38px 28px 38px;
+  /* added wavy border */
+  background-color: var(--primary-color);
+  mask: 
+    linear-gradient(0,#0000 20px,#000 0),
+    radial-gradient(20px,#000 calc(100% - 1px),#0000) bottom/37px 40px
 }
 
 .header-logo {
@@ -126,6 +133,49 @@ small,
   border-radius: 8px;
   font-size: .85rem;
   font-weight: 800;
+}
+
+/* change brand mark */
+.header-logo-image {
+  color: var(--ink);
+  height: 36px;
+}
+
+.public-nav a:hover {
+  color: #930C56;
+  transition: 200ms ease;
+}
+
+.cart-icon {
+  display: flex;
+}
+
+.cart-icon:hover {
+  transform: scale(105%);
+  transition: 200ms ease-out;
+  .basket-icon {
+    transform: rotate(6deg);
+    transition: 200ms ease-in;
+  }
+}
+
+.basket-icon {
+  height: 36px;
+  color: var(--ink);
+}
+
+.basket-number {
+  background-color: var(--accent);
+  color: var(--ink);
+  width: 20px;
+  height: 20px;
+  border-radius: 100%;
+  text-align: center;
+  font-weight: bold;
+  
+  position: relative;
+  top: -3px;
+  left: -12px;
 }
 
 .account-chip {
@@ -159,12 +209,14 @@ small,
 .site-footer {
   padding: 20px 38px;
   border-top: 1px solid var(--line);
+  background-color: var(--ink);
+
   display: flex;
   justify-content: space-between;
   gap: 18px;
   flex-wrap: wrap;
   font-size: .72rem;
-  color: var(--muted);
+  color: var(--paper);
 }
 
 .site-footer nav {
@@ -271,12 +323,12 @@ small,
 }
 
 .primary {
-  background: var(--accent);
-  color: white;
+  color: var(--ink);
+  background-color: var(--accent-alt);
 }
 
 .primary:hover {
-  background: #4038c9;
+   background: #6ae0fa;
 }
 
 .quiet {
@@ -333,8 +385,7 @@ small,
 .panel {
   padding: 26px;
   margin-bottom: 24px;
-  background: var(--surface);
-  border: 1px solid var(--line);
+  background: var(--accent-soft);
   border-radius: var(--radius);
 }
 
@@ -657,7 +708,7 @@ tr:last-child td {
   display: block;
   width: 100%;
   min-width: 0;
-  border: 1px solid #ccd3e0;
+  border: 1px solid var(--ink);
   border-radius: 7px;
   background: var(--surface);
   color: var(--ink);
@@ -821,7 +872,7 @@ dd {
   border-radius: 30px;
   padding: 6px 12px;
   background: var(--accent-soft);
-  color: var(--accent);
+  color: var(--ink);
   font-size: .69rem;
   font-weight: 650;
 }
@@ -1001,7 +1052,12 @@ dd {
   }
 
   .topbar {
-    padding: 18px 25px;
+    /* added wavy border */
+    background-color: var(--primary-color);
+    mask: 
+      linear-gradient(0,#0000 20px,#000 0),
+      radial-gradient(20px,#000 calc(100% - 1px),#0000) bottom/37px 40px;
+    padding: 18px 25px 28px 25px;
   }
 
   .sidebar {

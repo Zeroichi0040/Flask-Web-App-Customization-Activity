@@ -1,15 +1,29 @@
 /* Edit your brand here. Local assets and system fonts need no subscription. */
+@font-face {
+  font-family: "Lexend"; 
+  src: url(../fonts/Lexend/Lexend-VariableFont_wght.ttf);
+}
+
+@font-face {
+  font-family: "East Botany"; 
+  src: url("../fonts/east-botany/East Botany.otf");
+}
+
 :root {
-  --font: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --ink: #182033;
+  --font: Lexend, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --h-font: East Botany, ui-serif, serif;
+  --ink: #4F342B;
   --muted: #647089;
-  --paper: #f6f7fb;
+  --paper: #FCF7F7;
   --surface: #ffffff;
   --line: #e3e7ef;
-  --accent: #4f46e5;
-  --accent-soft: #eeedff;
+  --accent: #99E4F4;
+  --accent-soft: #ffd9df;
   --danger: #b42338;
   --success: #137a58;
   --sidebar: #131b2e;
   --radius: 12px;
+
+  --primary-color: #FF88B6;
+  --accent-alt: #67e3ff;
 }

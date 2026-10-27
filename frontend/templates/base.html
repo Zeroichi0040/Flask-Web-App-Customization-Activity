@@ -36,12 +36,20 @@
             </a>
           {% else %}
             <a class="header-logo" href="{{ url_for('public.home') }}">
-              <span class="brand-mark">{{ app_name[0]|upper }}</span>{{ app_name }}</a>
+              <img src="../static/images/logotype-primary.svg"
+                alt="{{ app_name }}"
+                class="header-logo-image"
+              >
             <nav class="public-nav" aria-label="Main navigation">
-              <a href="{{ url_for('public.contact') }}">Contact</a>
+              <a href="{{ url_for('public.contact') }}">Products</a>
               <a href="{{ url_for('auth.login_page') }}">Sign in</a>
-              <a class="button primary small"
-                 href="{{ url_for('auth.register_page') }}">Create account</a>
+              <a class="cart-icon"
+                href="{{ url_for('auth.register_page') }}">
+                <img class="basket-icon"
+                  src="../static/images/icons/basket.svg">
+                <div class="basket-number">5</div>
+              </a> 
+                 <!--Replace with CART page link & add variable for number of items in cart-->
             </nav>
           {% endif %}
         </header>
