@@ -1387,53 +1387,24 @@ dd {
   margin: 16px 0;
 }
 
-.cart-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 40;
-  background: rgb(79 52 43 / .35);
-}
-
-.cart-overlay[hidden] {
-  display: none;
-}
-
-.cart-sidebar {
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 50;
-  width: min(380px, 100%);
-  padding: 24px;
-  overflow-y: auto;
-  background: var(--surface);
-  box-shadow: -8px 0 24px rgb(79 52 43 / .15);
-  transform: translateX(100%);
-  visibility: hidden;
-  transition: transform 200ms ease, visibility 200ms;
-}
-
-.cart-sidebar.is-open {
-  transform: none;
-  visibility: visible;
-}
-
-.cart-sidebar-header {
-  display: flex;
-  justify-content: space-between;
+.cart-line {
   align-items: center;
-  margin-bottom: 16px;
 }
 
-.cart-sidebar-header h2 {
-  font-size: 1.4rem;
-}
-
-.cart-sidebar-actions {
+.cart-line > div {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  margin-right: auto;
+}
+
+.cart-quantity {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cart-quantity input {
+  width: 72px;
 }
 
 @media(max-width:800px) {

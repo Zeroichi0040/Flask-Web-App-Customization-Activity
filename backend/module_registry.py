@@ -15,4 +15,5 @@ BLUEPRINT_MODULES = [
 RESOURCE_MODULES = [
     "backend.modules.notes.resource:resource",
     "backend.modules.pages.resource:resource",
+    "backend.modules.products.resource:resource",
 ]

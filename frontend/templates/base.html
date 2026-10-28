@@ -43,17 +43,13 @@
             <nav class="public-nav" aria-label="Main navigation">
               <a href="{{ url_for('shop.products') }}">Products</a>
               <a href="{{ url_for('auth.login_page') }}">Sign in</a>
-              {# Opens the cart sidebar (JS); without JS it goes to checkout. #}
+              {# A cart needs an account: sign in, then continue to the cart. #}
               <a class="cart-icon"
-                href="{{ url_for('shop.checkout') }}"
-                data-cart-open
-                aria-controls="cart-sidebar"
-                aria-expanded="false"
-                aria-label="Open cart">
+                href="{{ url_for('auth.login_page', next=url_for('shop.cart')) }}"
+                aria-label="Cart (sign in required)">
                 <img class="basket-icon"
                   src="{{ url_for('static', filename='images/icons/basket.svg') }}"
                   alt="">
-                {# Replace the default with the real number of items in the cart. #}
                 <div class="basket-number">{{ cart_count|default(0) }}</div>
               </a>
             </nav>
@@ -74,8 +70,5 @@
         </footer>
       </div>
     </div>
-    {% if not current_user.is_authenticated %}
-      {% include "components/cart_sidebar.html" %}
-    {% endif %}
   </body>
 </html>

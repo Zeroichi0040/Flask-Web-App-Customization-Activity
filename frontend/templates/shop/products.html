@@ -9,20 +9,19 @@
       </div>
     </header>
     <div class="product-grid">
-      {# Replace `products` with the real product list from the database. #}
       {% for product in products %}
         <article class="product-card">
           <a class="product-media"
-             href="{{ url_for('shop.product', slug=product.slug) }}"
+             href="{{ url_for('shop.product', product_id=product.id) }}"
              aria-label="View {{ product.name }}">
             <img src="{{ url_for('static', filename='images/icons/basket.svg') }}" alt="">
           </a>
-          <h2><a href="{{ url_for('shop.product', slug=product.slug) }}">{{ product.name }}</a></h2>
-          <p>{{ product.description }}</p>
+          <h2><a href="{{ url_for('shop.product', product_id=product.id) }}">{{ product.name }}</a></h2>
+          <p>{{ product.description|truncate(100) }}</p>
           <div class="product-card-footer">
             <strong>₱{{ '%.2f'|format(product.price) }}</strong>
             <a class="button primary small"
-               href="{{ url_for('shop.product', slug=product.slug) }}">View</a>
+               href="{{ url_for('shop.product', product_id=product.id) }}">View</a>
           </div>
         </article>
       {% else %}

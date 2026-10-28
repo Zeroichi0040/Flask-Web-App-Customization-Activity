@@ -48,12 +48,22 @@ def test_migrations_and_multiple_app_instances(app):
         upgrade(directory=str(ROOT / "database/migrations"))
         check(directory=str(ROOT / "database/migrations"))
         names = set(inspect(db.engine).get_table_names())
-        assert {"users", "notes", "pages", "attachments", "audit_events", "inquiries", "site_state"} <= names
+        assert {
+            "users",
+            "notes",
+            "pages",
+            "products",
+            "cart_items",
+            "attachments",
+            "audit_events",
+            "inquiries",
+            "site_state",
+        } <= names
         original = framework()
     second = create_app(dict(app.config))
     with second.app_context():
         assert framework() is not original
-        assert set(framework().resources) == {"notes", "pages"}
+        assert set(framework().resources) == {"notes", "pages", "products"}
         db.engine.dispose()
     assert app.test_client().get("/health/ready").status_code == 200
 
@@ -198,7 +208,7 @@ def test_generator_rejects_unsafe_inputs(tmp_path, name, fields):
 def test_generated_resource_is_a_working_full_vertical_slice(tmp_path):
     root = tmp_path / "generated_application"
     copy_source(root)
-    scaffold(root, "products", ("name:text", "price:decimal", "stock:integer", "available:boolean", "launch_date:date"))
+    scaffold(root, "gadgets", ("name:text", "price:decimal", "stock:integer", "available:boolean", "launch_date:date"))
     env = {
         **os.environ,
         "APP_ENV": "testing",
@@ -213,7 +223,7 @@ def test_generated_resource_is_a_working_full_vertical_slice(tmp_path):
     env.pop("RENDER", None)
     for cmd in [
         ["manage.py", "db", "upgrade"],
-        ["manage.py", "db", "migrate", "-m", "Add products"],
+        ["manage.py", "db", "migrate", "-m", "Add gadgets"],
         ["manage.py", "db", "upgrade"],
         ["manage.py", "db", "check"],
     ]:
@@ -233,36 +243,36 @@ def request(method,path,data):
 def sign_in(email):
     assert request('POST','/api/v1/auth/login',{'email':email,'password':'Test-password-42'}).status_code==200
 sign_in('one@example.com')
-assert b'Products' in c.get('/app').data
-assert '/api/v1/products' in c.get('/api/openapi.json').json['paths']
+assert b'Gadgets' in c.get('/app').data
+assert '/api/v1/gadgets' in c.get('/api/openapi.json').json['paths']
 data={'name':'Camera','price':'199.95','stock':2,'available':True,'launch_date':'2026-11-01'}
-r=request('POST','/api/v1/products',data)
+r=request('POST','/api/v1/gadgets',data)
 assert r.status_code==201,r.get_data(as_text=True)
 record=r.json['data'];identifier=record['id']
 assert record['price']=='199.95' and record['stock']==2 and record['available'] is True
-assert c.get('/app/products').status_code==200
-assert b'199.95' in c.get('/app/products').data
-assert c.get(f'/app/products/{identifier}').status_code==200
-assert request('PATCH',f'/api/v1/products/{identifier}',{'version':1,'price':'249.00'}).json['data']['version']==2
+assert c.get('/app/gadgets').status_code==200
+assert b'199.95' in c.get('/app/gadgets').data
+assert c.get(f'/app/gadgets/{identifier}').status_code==200
+assert request('PATCH',f'/api/v1/gadgets/{identifier}',{'version':1,'price':'249.00'}).json['data']['version']==2
 token=c.get('/api/v1/csrf').json['csrf_token']
-assert c.post(f'/app/products/{identifier}/edit',data={'csrf_token':token,'version':2,'name':'Camera Pro','price':'299.00','stock':'3','available':'y','launch_date':'2026-12-01'}).status_code==303
-assert c.get(f'/api/v1/products/{identifier}').json['data']['name']=='Camera Pro'
-assert b'Camera Pro' in c.get('/app/products/export.csv').data
+assert c.post(f'/app/gadgets/{identifier}/edit',data={'csrf_token':token,'version':2,'name':'Camera Pro','price':'299.00','stock':'3','available':'y','launch_date':'2026-12-01'}).status_code==303
+assert c.get(f'/api/v1/gadgets/{identifier}').json['data']['name']=='Camera Pro'
+assert b'Camera Pro' in c.get('/app/gadgets/export.csv').data
 assert request('POST','/api/v1/auth/logout',{}).status_code==204
 sign_in('two@example.com')
-assert c.get('/api/v1/products').json['data']==[]
-assert c.get(f'/api/v1/products/{identifier}').status_code==404
+assert c.get('/api/v1/gadgets').json['data']==[]
+assert c.get(f'/api/v1/gadgets/{identifier}').status_code==404
 request('POST','/api/v1/auth/logout',{})
 sign_in('one@example.com')
-assert request('DELETE',f'/api/v1/products/{identifier}',{'version':3}).status_code==204
-assert c.get(f'/api/v1/products/{identifier}').status_code==404
+assert request('DELETE',f'/api/v1/gadgets/{identifier}',{'version':3}).status_code==204
+assert c.get(f'/api/v1/gadgets/{identifier}').status_code==404
 """
     result = subprocess.run(
         [sys.executable, "-c", script], cwd=root, env=env, capture_output=True, text=True, timeout=30
     )
     assert result.returncode == 0, result.stdout + result.stderr
     result = subprocess.run(
-        [sys.executable, "-m", "pytest", "-q", "tests/test_resource_products.py"],
+        [sys.executable, "-m", "pytest", "-q", "tests/test_resource_gadgets.py"],
         cwd=root,
         env=env,
         capture_output=True,
