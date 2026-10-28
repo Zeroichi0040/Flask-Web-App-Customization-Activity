@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% from 'components/forms.html' import field %}
+{% block title %}Checkout{% endblock %}
+{% block content %}
+  <section class="checkout">
+    <a class="back-link" href="{{ url_for('shop.cart') }}">← Back to cart</a>
+    <header class="page-heading">
+      <div>
+        <p class="eyebrow">CHECKOUT</p>
+        <h1>Checkout</h1>
+      </div>
+    </header>
+    <div class="checkout-layout">
+      <form class="panel form-stack"
+            method="post"
+            action="{{ url_for('shop.checkout') }}">
+        {{ form.hidden_tag() }}
+        <h3>Contact</h3>
+        {{ field(form.full_name, autocomplete='name') }}
+        {{ field(form.email, autocomplete='email') }}
+        {{ field(form.phone, autocomplete='tel') }}
+        <h3>Delivery address</h3>
+        {{ field(form.address, autocomplete='street-address') }}
+        {{ field(form.city, autocomplete='address-level2') }}
+        {{ field(form.notes) }}
+        {{ form.submit(class_='button primary') }}
+      </form>
+      <aside class="panel order-summary" aria-label="Order summary">
+        <h3>Order summary</h3>
+        <ul class="summary-list">
+          {% for line in lines %}
+            <li>
+              <span>{{ line.product.name }} × {{ line.item.quantity }}</span>
+              <span>₱{{ '%.2f'|format(line.subtotal) }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+        <p class="summary-total"><span>Total</span><strong>₱{{ '%.2f'|format(total) }}</strong></p>
+        <a class="button quiet" href="{{ url_for('shop.cart') }}">Edit cart</a>
+      </aside>
+    </div>
+  </section>
+{% endblock %}

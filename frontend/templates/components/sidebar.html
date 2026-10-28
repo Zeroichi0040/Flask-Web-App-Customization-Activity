@@ -8,6 +8,10 @@
   <nav class="side-nav" aria-label="Application">
     <a href="{{ url_for('dashboard.index') }}"
        {% if request.endpoint == 'dashboard.index' %}aria-current="page"{% endif %}>Dashboard</a>
+    <a href="{{ url_for('shop.products') }}"
+       {% if request.endpoint in ('shop.products', 'shop.product') %}aria-current="page"{% endif %}>Products</a>
+    <a href="{{ url_for('shop.cart') }}"
+       {% if request.endpoint in ('shop.cart', 'shop.checkout') %}aria-current="page"{% endif %}>Cart ({{ cart_count|default(0) }})</a>
     {% for entry in navigation_resources %}
       <a href="{{ url_for(entry.key + '.index') }}"
          {% if request.blueprint == entry.key %}aria-current="page"{% endif %}>{{ entry.label }}</a>

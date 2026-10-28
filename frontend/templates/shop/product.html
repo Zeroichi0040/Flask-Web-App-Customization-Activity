@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}{{ product.name }}{% endblock %}
+{% block content %}
+  <section class="product-detail">
+    <a class="back-link" href="{{ url_for('shop.products') }}">← All products</a>
+    <div class="product-detail-layout">
+      <div class="product-media large">
+        <img src="{{ url_for('static', filename='images/icons/basket.svg') }}"
+             alt="{{ product.name }}">
+      </div>
+      <div class="product-info">
+        <p class="eyebrow">PRODUCT</p>
+        <h1>{{ product.name }}</h1>
+        <p class="product-price">₱{{ '%.2f'|format(product.price) }}</p>
+        <p class="lead preserve-lines">{{ product.description }}</p>
+        {% if current_user.is_authenticated %}
+          <form class="product-actions"
+                method="post"
+                action="{{ url_for('shop.cart_add', product_id=product.id) }}">
+            {{ form.hidden_tag() }}
+            {{ form.quantity.label }}
+            {{ form.quantity(class_='input', min=1, max=99) }}
+            <button class="button primary" type="submit">Add to cart</button>
+          </form>
+          <a class="button quiet" href="{{ url_for('shop.cart') }}">View cart</a>
+        {% else %}
+          <p class="hint">An account is needed to add items to a cart.</p>
+          <a class="button primary"
+             href="{{ url_for('auth.login_page', next=url_for('shop.product', product_id=product.id)) }}">Sign in to add to cart</a>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+{% endblock %}

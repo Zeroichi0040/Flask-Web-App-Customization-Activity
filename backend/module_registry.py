@@ -2,6 +2,7 @@
 
 BLUEPRINT_MODULES = [
     "backend.modules.public.routes",
+    "backend.modules.shop.routes",
     "backend.modules.auth.routes",
     "backend.modules.account.routes",
     "backend.modules.dashboard.routes",
@@ -14,4 +15,5 @@ BLUEPRINT_MODULES = [
 RESOURCE_MODULES = [
     "backend.modules.notes.resource:resource",
     "backend.modules.pages.resource:resource",
+    "backend.modules.products.resource:resource",
 ]

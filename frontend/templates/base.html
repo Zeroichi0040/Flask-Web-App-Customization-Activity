@@ -41,15 +41,17 @@
                 class="header-logo-image"
               >
             <nav class="public-nav" aria-label="Main navigation">
-              <a href="{{ url_for('public.contact') }}">Products</a>
+              <a href="{{ url_for('shop.products') }}">Products</a>
               <a href="{{ url_for('auth.login_page') }}">Sign in</a>
+              {# A cart needs an account: sign in, then continue to the cart. #}
               <a class="cart-icon"
-                href="{{ url_for('auth.register_page') }}">
+                href="{{ url_for('auth.login_page', next=url_for('shop.cart')) }}"
+                aria-label="Cart (sign in required)">
                 <img class="basket-icon"
-                  src="../static/images/icons/basket.svg">
-                <div class="basket-number">5</div>
-              </a> 
-                 <!--Replace with CART page link & add variable for number of items in cart-->
+                  src="{{ url_for('static', filename='images/icons/basket.svg') }}"
+                  alt="">
+                <div class="basket-number">{{ cart_count|default(0) }}</div>
+              </a>
             </nav>
           {% endif %}
         </header>
