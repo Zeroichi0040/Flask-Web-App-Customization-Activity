@@ -126,6 +126,9 @@ def specification(resources):
                 definition["format"] = "email"
             if kind == "url":
                 definition["format"] = "uri"
+            if kind == "image":
+                definition["readOnly"] = True
+                definition["description"] += " (read-only image URL; upload files through the admin form)"
             if kind == "decimal":
                 definition["description"] += " (decimal string with at most 2 decimal places)"
             if kind == "choice":

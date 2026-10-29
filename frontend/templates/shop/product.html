@@ -5,8 +5,14 @@
     <a class="back-link" href="{{ url_for('shop.products') }}">← All products</a>
     <div class="product-detail-layout">
       <div class="product-media large">
-        <img src="{{ url_for('static', filename='images/icons/basket.svg') }}"
-             alt="{{ product.name }}">
+        {% if product.has_image %}
+          <img class="product-photo"
+               src="{{ url_for('shop.product_image', product_id=product.id, v=product.version) }}"
+               alt="{{ product.name }}">
+        {% else %}
+          <img src="{{ url_for('static', filename='images/icons/basket.svg') }}"
+               alt="{{ product.name }}">
+        {% endif %}
       </div>
       <div class="product-info">
         <p class="eyebrow">PRODUCT</p>

@@ -50,7 +50,10 @@ def build_html(resource):
         resource.policy.authorize(current_user, "update" if record else "create")
         form = ResourceForm(obj=record)
         if form.validate_on_submit():
-            values = {field.name: getattr(form, field.name).data for field in resource.fields}
+            # Image uploads are not plain values; the resource's on_save hook reads them from the request.
+            values = {
+                field.name: getattr(form, field.name).data for field in resource.fields if field.kind != "image"
+            }
             try:
                 if record:
                     values["version"] = form.version.data
