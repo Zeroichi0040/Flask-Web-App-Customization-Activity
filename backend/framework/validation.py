@@ -87,6 +87,11 @@ def clean_payload(resource, payload, partial=False):
     errors = {name: ["This field is not editable."] for name in set(payload) - names - {"version"}}
     output = {}
     for field in resource.fields:
+        if field.kind == "image":
+            # Read-only over JSON: files are uploaded through the admin form.
+            if payload.get(field.name) not in (None, ""):
+                errors[field.name] = ["Images can only be uploaded through the admin form."]
+            continue
         if partial and field.name not in payload:
             continue
         try:

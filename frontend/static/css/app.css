@@ -1331,6 +1331,32 @@ dd {
   width: 30%;
 }
 
+/* Uploaded product photos fill the frame; the basket icon above stays a small centred icon. */
+.product-media {
+  overflow: hidden;
+}
+
+.product-media img.product-photo,
+.product-media.large img.product-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Admin product form and detail page. */
+.image-preview {
+  display: block;
+  max-width: 220px;
+  max-height: 220px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+}
+
+.image-current {
+  display: grid;
+  gap: 10px;
+}
+
 .product-detail-layout {
   display: grid;
   grid-template-columns: 1fr 1fr;
