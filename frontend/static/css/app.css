@@ -160,19 +160,19 @@ small,
 }
 
 .basket-icon {
-  height: 36px;
+  height: 32px;
   color: var(--ink);
 }
 
 .basket-number {
   background-color: var(--accent);
   color: var(--ink);
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   border-radius: 100%;
   text-align: center;
   font-weight: bold;
-  
+  font-size: 10px;
   position: relative;
   top: -3px;
   left: -12px;
@@ -886,11 +886,19 @@ dd {
   display: flex;
   gap: 22px;
   align-items: center;
-  font-size: .82rem;
+  font-size: 1rem;
+  justify-content: space-between;
 }
 
-.public-nav>a:not(.button) {
+.public-nav a:not(.button) {
   text-decoration: none;
+}
+
+.nav-icons-container {
+  display: flex;
+  gap: 22px;
+  align-items: center;
+  font-size: 1rem;
 }
 
 .landing-hero {

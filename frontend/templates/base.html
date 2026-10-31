@@ -40,18 +40,30 @@
                 alt="{{ app_name }}"
                 class="header-logo-image"
               >
+            </a>
             <nav class="public-nav" aria-label="Main navigation">
-              <a href="{{ url_for('shop.products') }}">Products</a>
-              <a href="{{ url_for('auth.login_page') }}">Sign in</a>
-              {# A cart needs an account: sign in, then continue to the cart. #}
-              <a class="cart-icon"
-                href="{{ url_for('auth.login_page', next=url_for('shop.cart')) }}"
-                aria-label="Cart (sign in required)">
-                <img class="basket-icon"
-                  src="{{ url_for('static', filename='images/icons/basket.svg') }}"
-                  alt="">
-                <div class="basket-number">{{ cart_count|default(0) }}</div>
-              </a>
+              <div class="nav-labels-container">
+                <a href="{{ url_for('shop.products') }}">Products</a>
+                <a href="{{ url_for('auth.login_page') }}">Sign in</a>
+                {# A cart needs an account: sign in, then continue to the cart. #}
+              </div>
+              <div class="nav-icons-container">
+                <a class="signin-icon"
+                  href="{{ url_for('auth.login_page', next=url_for('shop.cart')) }}"
+                  aria-label="Cart (sign in required)">
+                  <img class="user-icon"
+                    src="{{ url_for('static', filename='images/icons/user.svg') }}"
+                    alt="">
+                </a>
+                <a class="cart-icon"
+                  href="{{ url_for('auth.login_page', next=url_for('shop.cart')) }}"
+                  aria-label="Cart (sign in required)">
+                  <img class="basket-icon"
+                    src="{{ url_for('static', filename='images/icons/basket.svg') }}"
+                    alt="">
+                  <div class="basket-number">{{ cart_count|default(1) }}</div>
+                </a>
+              </div>
             </nav>
           {% endif %}
         </header>
