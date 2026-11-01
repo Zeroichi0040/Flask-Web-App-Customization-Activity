@@ -14,7 +14,14 @@
           <a class="product-media"
              href="{{ url_for('shop.product', product_id=product.id) }}"
              aria-label="View {{ product.name }}">
-            <img src="{{ url_for('static', filename='images/icons/basket.svg') }}" alt="">
+            {% if product.has_image %}
+              <img class="product-photo"
+                   src="{{ url_for('shop.product_image', product_id=product.id, v=product.version) }}"
+                   alt=""
+                   loading="lazy">
+            {% else %}
+              <img src="{{ url_for('static', filename='images/icons/basket.svg') }}" alt="">
+            {% endif %}
           </a>
           <h2><a href="{{ url_for('shop.product', product_id=product.id) }}">{{ product.name }}</a></h2>
           <p>{{ product.description|truncate(100) }}</p>

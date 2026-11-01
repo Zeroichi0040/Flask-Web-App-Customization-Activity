@@ -3,6 +3,7 @@
 from decimal import Decimal
 
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileAllowed, FileField
 from wtforms import (
     BooleanField,
     DateField,
@@ -28,6 +29,9 @@ def form_class(resource):
             validators.append(Length(max=definition.max_length))
         if kind == "choice":
             options["choices"] = [SelectChoice(*choice) for choice in definition.choices]
+        if kind == "image":
+            # The file itself is checked and stored by the resource's on_save hook.
+            validators.append(FileAllowed(["png", "jpg", "jpeg", "webp"], "Choose a PNG, JPEG, or WebP image."))
         if kind == "decimal":
             options["places"] = 2
             # JSON uses decimal strings; WTForms must receive a numeric default.
@@ -43,6 +47,7 @@ def form_class(resource):
             "boolean": BooleanField,
             "date": DateField,
             "choice": SelectField,
+            "image": FileField,
         }[kind]
         fields[definition.name] = cls(definition.label, **options)
     return type(resource.key.title() + "Form", (FlaskForm,), fields)

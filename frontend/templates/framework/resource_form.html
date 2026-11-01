@@ -14,8 +14,10 @@
         </h1>
       </div>
     </header>
+    {% set has_upload = resource.fields|selectattr("kind", "equalto", "image")|list|length > 0 %}
     <form class="panel form-stack"
-          method="post">{{ form.hidden_tag() }}{% for definition in resource.fields %}
+          method="post"
+          {% if has_upload %}enctype="multipart/form-data"{% endif %}>{{ form.hidden_tag() }}{% for definition in resource.fields %}
       {% set input = getattr(form, definition.name) %}
       {% if definition.kind == "boolean" %}
         <div class="field">
@@ -27,6 +29,20 @@
             <p class="field-error">{{ message }}</p>
           {% endfor %}
         </div>
+{% elif definition.kind == "image" %}
+{{ field(input, help=definition.help, accept="image/png,image/jpeg,image/webp") }}
+{% set current = getattr(record, definition.name) if record else "" %}
+{% if current %}
+  <div class="field image-current">
+    <img class="image-preview"
+         src="{{ current }}"
+         alt="Current {{ definition.label|lower }}">
+    <label class="checkbox-label">
+      <input type="checkbox" name="remove_{{ definition.name }}" value="1">
+      Remove current image
+    </label>
+  </div>
+{% endif %}
 {% else %}{{ field(input, help=definition.help) }}{% endif %}
 {% endfor %}
 <div class="actions">

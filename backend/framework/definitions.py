@@ -7,7 +7,9 @@ from typing import Callable
 
 from backend.framework.policies import OwnerPolicy
 
-KINDS = {"text", "textarea", "email", "url", "integer", "decimal", "boolean", "date", "choice"}
+# "image" is an upload shown in the admin form only. The model exposes a read-only `<name>` property
+# (the image URL) and the resource's on_save hook stores the uploaded file. See backend/modules/products.
+KINDS = {"text", "textarea", "email", "url", "integer", "decimal", "boolean", "date", "choice", "image"}
 RESERVED = {
     "auth",
     "csrf",

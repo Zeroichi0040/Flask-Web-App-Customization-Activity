@@ -4,7 +4,9 @@ Products come from the admin-managed catalog (backend/modules/products). Orders 
 payment are not built yet: checkout validates the form and shows a confirmation.
 """
 
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from io import BytesIO
+
+from flask import Blueprint, abort, flash, redirect, render_template, request, send_file, url_for
 from flask_login import current_user, login_required
 
 from backend.common.forms import ActionForm
@@ -44,6 +46,18 @@ def products():
 def product(product_id):
     record = db.get_or_404(ProductsRecord, product_id)
     return render_template("shop/product.html", product=record, form=QuantityForm())
+
+
+@bp.get("/products/<int:product_id>/image")
+def product_image(product_id):
+    """The product photo uploaded by an admin. Public like the product pages themselves."""
+    record = db.get_or_404(ProductsRecord, product_id)
+    if not record.has_image:
+        abort(404)
+    response = send_file(BytesIO(record.image_data), mimetype=record.image_type)
+    # Pages link here with ?v=<version>, so a replaced image gets a new URL and old copies can be cached.
+    response.headers["Cache-Control"] = "public, max-age=86400"
+    return response
 
 
 @bp.post("/cart/add/<int:product_id>")
