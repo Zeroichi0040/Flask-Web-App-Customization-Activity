@@ -14,6 +14,20 @@
         <ul class="summary-list">
           {% for line in lines %}
             <li class="cart-line">
+              <a class="cart-thumb"
+                href="{{ url_for('shop.product', product_id=line.product.id) }}"
+                aria-label="View {{ line.product.name }}">
+                {% if line.product.has_image %}
+                  <img class="cart-thumb-photo"
+                      src="{{ url_for('shop.product_image', product_id=line.product.id, v=line.product.version) }}"
+                      alt=""
+                      loading="lazy">
+                {% else %}
+                  <img class="cart-thumb-icon"
+                      src="{{ url_for('static', filename='images/icons/basket.svg') }}"
+                      alt="">
+                {% endif %}
+              </a>
               <div>
                 <a href="{{ url_for('shop.product', product_id=line.product.id) }}">{{ line.product.name }}</a>
                 <small>₱{{ '%.2f'|format(line.product.price) }} each</small>

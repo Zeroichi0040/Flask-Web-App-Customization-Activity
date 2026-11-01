@@ -3,7 +3,7 @@ import re
 import pytest
 
 from database import db
-from database.models import CartItem
+from database.models import ProductsRecord
 from tests.conftest import api_request, login, post_form
 
 
@@ -90,6 +90,22 @@ def test_signed_in_cart_flow_and_nav_links(app, client, users, product_ids):
         mine = db.session.scalar(db.select(CartItem).where(CartItem.product_id == first))
         assert post_form(other, f"/cart/items/{mine.id}/remove").status_code == 404
 
+
+def test_cart_lines_show_a_product_thumbnail(app, client, users, product_ids):
+    login(client)
+    with_photo, without_photo = product_ids
+    with app.app_context():
+        product = db.session.get(ProductsRecord, with_photo)
+        product.image_data, product.image_type = b"not-a-real-image", "image/png"
+        db.session.commit()
+        version = product.version
+    post_form(client, f"/cart/add/{with_photo}", quantity="1")
+    post_form(client, f"/cart/add/{without_photo}", quantity="1")
+
+    html = client.get("/cart").get_data(as_text=True)
+    assert f"/products/{with_photo}/image?v={version}" in html  # uploaded photo as the thumbnail
+    assert html.count("cart-thumb-photo") == 1
+    assert html.count("cart-thumb-icon") == 1  # the other product falls back to the basket icon
 
 def test_checkout_validates_and_confirms(client, users, product_ids):
     login(client)
