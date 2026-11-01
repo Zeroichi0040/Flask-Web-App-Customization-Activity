@@ -3,7 +3,9 @@
           type="button"
           aria-label="Close navigation">Close menu</button>
   <a class="sidebar-brand" href="{{ url_for('dashboard.index') }}">
-    <span class="brand-mark">{{ app_name[0]|upper }}</span>{{ app_name }}</a>
+    <img src="{{ url_for('static', filename='images/logo-sidebar.svg') }}"
+                 alt="{{ app_name }}"
+                 class="sidebar-logo-image"></a>
   <p class="nav-label">APPLICATION</p>
   <nav class="side-nav" aria-label="Application">
     <a href="{{ url_for('dashboard.index') }}"

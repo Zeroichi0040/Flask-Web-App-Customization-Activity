@@ -117,3 +117,177 @@ if (profileMenu) {
     }
   });
 }
+
+
+document.addEventListener("DOMContentLoaded", () => {
+  const drawer = document.getElementById("cart-drawer");
+  const panel = drawer?.querySelector(".cart-drawer__panel");
+  const content = document.getElementById("cart-drawer-content");
+
+  if (!drawer || !panel || !content) return;
+
+  let previousFocus = null;
+  let isLoading = false;
+
+  // Get the existing cart page URL from the basket icon.
+  function getCartUrl() {
+    return document.querySelector(".cart-icon")?.href;
+  }
+
+  // Fetch the existing cart page and extract its contents.
+  async function loadCart() {
+    if (isLoading) return;
+
+    const cartUrl = getCartUrl();
+    if (!cartUrl) return;
+
+    isLoading = true;
+    content.innerHTML = "<p>Loading your basket...</p>";
+
+    try {
+      const response = await fetch(cartUrl, {
+        method: "GET",
+        credentials: "same-origin",
+        headers: {
+          "X-Requested-With": "XMLHttpRequest"
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error("Could not load cart.");
+      }
+
+      const html = await response.text();
+      const documentFromResponse =
+        new DOMParser().parseFromString(html, "text/html");
+
+      const cartContent =
+        documentFromResponse.querySelector("#cart-page-content");
+
+      if (!cartContent) {
+        throw new Error("Cart content was not found.");
+      }
+
+      content.innerHTML = cartContent.innerHTML;
+
+      // Keep the basket counter synchronized if it exists.
+      const newCount =
+        documentFromResponse.querySelector(".basket-number");
+
+      const currentCount =
+        document.querySelector(".basket-number");
+
+      if (newCount && currentCount) {
+        currentCount.textContent = newCount.textContent;
+      }
+
+    } catch (error) {
+      console.error("Cart drawer error:", error);
+
+      content.innerHTML = `
+        <p>Unable to load your basket.</p>
+        <a class="button primary" href="${cartUrl}">
+          View cart
+        </a>
+      `;
+
+    } finally {
+      isLoading = false;
+    }
+  }
+
+  // Open drawer.
+  async function openCart() {
+    previousFocus = document.activeElement;
+
+    drawer.hidden = false;
+    document.body.classList.add("cart-drawer-open");
+
+    await loadCart();
+
+    panel.querySelector(".cart-drawer__close")?.focus();
+  }
+
+  // Close drawer.
+  function closeCart() {
+    drawer.hidden = true;
+    document.body.classList.remove("cart-drawer-open");
+
+    previousFocus?.focus();
+  }
+
+  // Intercept basket icon clicks.
+  document.addEventListener("click", (event) => {
+    const cartLink = event.target.closest(".cart-icon");
+
+    if (cartLink) {
+      // Preserve normal browser behavior for modified clicks.
+      if (
+        event.button !== 0 ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.shiftKey ||
+        event.altKey
+      ) {
+        return;
+      }
+
+      event.preventDefault();
+      openCart();
+      return;
+    }
+
+    // Close button or backdrop.
+    if (event.target.closest("[data-cart-close]")) {
+      closeCart();
+    }
+  });
+
+  // Handle Escape key.
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !drawer.hidden) {
+      closeCart();
+    }
+  });
+
+  // Handle quantity updates and item removals without leaving the drawer.
+  drawer.addEventListener("submit", async (event) => {
+    const form = event.target.closest("#cart-drawer-content form");
+
+    if (!form) return;
+
+    event.preventDefault();
+
+    const submitButton = form.querySelector('[type="submit"]');
+
+    if (submitButton) {
+      submitButton.disabled = true;
+    }
+
+    try {
+      const response = await fetch(form.action, {
+        method: "POST",
+        body: new FormData(form),
+        credentials: "same-origin",
+        headers: {
+          "X-Requested-With": "XMLHttpRequest"
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error("Cart update failed.");
+      }
+
+      // Reload the cart so the quantities and total are current.
+      await loadCart();
+
+    } catch (error) {
+      console.error("Cart update error:", error);
+
+      // Fall back to the normal server-rendered cart page.
+      window.location.href = getCartUrl();
+
+    }
+  });
+});
+

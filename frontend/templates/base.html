@@ -112,5 +112,45 @@
         </footer>
       </div>
     </div>
+    
+    <!-- Cart drawer -->
+    <div class="cart-drawer" id="cart-drawer" hidden>
+
+      <!-- Backdrop -->
+      <button
+        class="cart-drawer__backdrop"
+        type="button"
+        data-cart-close
+        aria-label="Close cart">
+      </button>
+
+      <!-- Drawer panel -->
+      <aside
+        class="cart-drawer__panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="cart-drawer-title"
+        tabindex="-1">
+
+        <header class="cart-drawer__header">
+          <h2 id="cart-drawer-title">Your basket</h2>
+
+          <button
+            class="cart-drawer__close"
+            type="button"
+            data-cart-close
+            aria-label="Close cart">
+            &times;
+          </button>
+        </header>
+
+        <div class="cart-drawer__body">
+          <div id="cart-drawer-content">
+            <p>Loading your basket...</p>
+          </div>
+        </div>
+
+      </aside>
+    </div>
   </body>
 </html>
