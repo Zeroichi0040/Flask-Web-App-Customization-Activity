@@ -14,58 +14,87 @@
           href="{{ url_for('static', filename='css/app.css') }}">
     <script type="module" src="{{ url_for('static', filename='js/app.js') }}"></script>
   </head>
-  <body class="{{ 'authenticated' if current_user.is_authenticated else 'public-site' }}">
+  {% set admin_sidebar = current_user.is_authenticated and current_user.is_admin %}
+  <body class="{{ 'authenticated' if current_user.is_authenticated else 'public-site' }}{{ ' has-sidebar' if admin_sidebar }}">
     <a class="skip-link" href="#main">Skip to content</a>
     <div class="app-shell">
-      {% if current_user.is_authenticated %}
+      {% if admin_sidebar %}
         {% include "components/sidebar.html" %}
       {% endif %}
       <div class="app-column">
         <header class="topbar">
-          {% if current_user.is_authenticated %}
+          {% if admin_sidebar %}
             <button class="button quiet menu-toggle"
                     type="button"
                     aria-controls="sidebar"
                     aria-expanded="false">Menu</button>
-            <a class="header-logo" href="{{ url_for('dashboard.index') }}">{{ app_name }}</a>
-            <a class="account-chip"
-               href="{{ url_for('account.profile') }}"
-               aria-label="My account">
-              <span class="avatar">{{ current_user.display_name[0]|upper }}</span>
-              <span>{{ current_user.display_name }}</span>
-            </a>
-          {% else %}
-            <a class="header-logo" href="{{ url_for('public.home') }}">
-              <img src="../static/images/logotype-primary.svg"
-                alt="{{ app_name }}"
-                class="header-logo-image"
-              >
-            </a>
-            <nav class="public-nav" aria-label="Main navigation">
-              <div class="nav-labels-container">
-                <a href="{{ url_for('shop.products') }}">Products</a>
-                <a href="{{ url_for('auth.login_page') }}">Sign in</a>
-                {# A cart needs an account: sign in, then continue to the cart. #}
-              </div>
-              <div class="nav-icons-container">
-                <a class="signin-icon"
-                  href="{{ url_for('auth.login_page', next=url_for('shop.cart')) }}"
-                  aria-label="Cart (sign in required)">
-                  <img class="user-icon"
-                    src="{{ url_for('static', filename='images/icons/user.svg') }}"
-                    alt="">
-                </a>
-                <a class="cart-icon"
-                  href="{{ url_for('auth.login_page', next=url_for('shop.cart')) }}"
-                  aria-label="Cart (sign in required)">
-                  <img class="basket-icon"
-                    src="{{ url_for('static', filename='images/icons/basket.svg') }}"
-                    alt="">
-                  <div class="basket-number">{{ cart_count|default(1) }}</div>
-                </a>
-              </div>
-            </nav>
           {% endif %}
+
+          <nav class="topbar-nav" aria-label="Main navigation">
+            <a href="{{ url_for('shop.products') }}"
+               {% if request.endpoint in ('shop.products', 'shop.product') %}aria-current="page"{% endif %}>Products</a>
+            <a href="{{ url_for('public.contact') }}"
+               {% if request.endpoint == 'public.contact' %}aria-current="page"{% endif %}>Contact</a>
+          </nav>
+
+          <a class="header-logo" href="{{ url_for('public.home') }}">
+            <img src="{{ url_for('static', filename='images/logotype-primary.svg') }}"
+                 alt="{{ app_name }}"
+                 class="header-logo-image">
+          </a>
+
+          <div class="topbar-actions">
+            {# A cart needs an account: signed-out visitors sign in first, then continue to the cart. #}
+            {% set cart_href = url_for('shop.cart') if current_user.is_authenticated
+               else url_for('auth.login_page', next=url_for('shop.cart')) %}
+            <a class="cart-icon"
+               href="{{ cart_href }}"
+               aria-label="Cart{% if cart_count %}, {{ cart_count }} items{% endif %}{% if not current_user.is_authenticated %} (sign in required){% endif %}">
+              <img class="basket-icon"
+                   src="{{ url_for('static', filename='images/icons/basket.svg') }}"
+                   alt="">
+              {% if cart_count %}<span class="basket-number" aria-hidden="true">{{ cart_count }}</span>{% endif %}
+            </a>
+
+            {% if current_user.is_authenticated %}
+              <div class="profile-menu">
+                <button class="profile-trigger"
+                        type="button"
+                        aria-haspopup="true"
+                        aria-expanded="false"
+                        aria-controls="profile-dropdown"
+                        aria-label="Account menu for {{ current_user.display_name }}">
+                  <span class="avatar">{{ current_user.display_name[0]|upper }}</span>
+                </button>
+                <div class="profile-dropdown" id="profile-dropdown">
+                  <div class="profile-card">
+                    <div class="profile-card-head">
+                      <span class="avatar">{{ current_user.display_name[0]|upper }}</span>
+                      <span class="profile-name">{{ current_user.display_name }}</span>
+                    </div>
+                    <nav class="profile-card-nav" aria-label="Account">
+                      {# Orders is planned but there is no orders page yet; enable this link when one exists. #}
+                      <span class="profile-item is-disabled" aria-disabled="true">Orders <small>Coming soon</small></span>
+                      <a class="profile-item" href="{{ url_for('account.profile') }}"
+                         {% if request.blueprint == 'account' %}aria-current="page"{% endif %}>Account settings</a>
+                      <form action="{{ url_for('auth.logout_page') }}" method="post">
+                        {{ logout_form.hidden_tag() }}
+                        <button class="profile-item" type="submit">Sign out</button>
+                      </form>
+                    </nav>
+                  </div>
+                </div>
+              </div>
+            {% else %}
+              <a class="signin-icon"
+                 href="{{ url_for('auth.login_page') }}"
+                 aria-label="Sign in">
+                <img class="user-icon"
+                     src="{{ url_for('static', filename='images/icons/user.svg') }}"
+                     alt="">
+              </a>
+            {% endif %}
+          </div>
         </header>
         <main id="main" class="main-content">
           {% for category, message in get_flashed_messages(with_categories=true) %}
@@ -76,8 +105,9 @@
         <footer class="site-footer">
           <span>{{ app_name }} · {{ app_tagline }}</span>
           <nav aria-label="Footer">
-            <a href="{{ url_for('public.privacy') }}">Privacy</a>
+            <a href="{{ url_for('shop.products') }}">Products</a>
             <a href="{{ url_for('public.contact') }}">Contact</a>
+            <a href="{{ url_for('public.privacy') }}">Privacy</a>
           </nav>
         </footer>
       </div>

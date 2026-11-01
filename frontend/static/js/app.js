@@ -87,3 +87,33 @@ for (const panel of document.querySelectorAll('[data-resource-list]')) {
     }
   });
 }
+
+/* Profile menu: hover on mouse devices; tap, Enter or Space elsewhere; Escape or outside click closes. */
+const profileMenu = document.querySelector('.profile-menu');
+if (profileMenu) {
+  const trigger = profileMenu.querySelector('.profile-trigger');
+  const hoverDevice = window.matchMedia('(hover: hover)');
+  const setProfile = open => {
+    profileMenu.classList.toggle('is-open', open);
+    trigger.setAttribute('aria-expanded', String(open));
+  };
+  trigger.addEventListener('click', event => {
+    // A real mouse click already opened it on hover; keyboard clicks have detail 0.
+    if (hoverDevice.matches && event.detail > 0) setProfile(true);
+    else setProfile(!profileMenu.classList.contains('is-open'));
+  });
+  profileMenu.addEventListener('mouseenter', () => { if (hoverDevice.matches) setProfile(true); });
+  profileMenu.addEventListener('mouseleave', () => { if (hoverDevice.matches) setProfile(false); });
+  profileMenu.addEventListener('focusout', event => {
+    if (!profileMenu.contains(event.relatedTarget)) setProfile(false);
+  });
+  document.addEventListener('click', event => {
+    if (!profileMenu.contains(event.target)) setProfile(false);
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && profileMenu.classList.contains('is-open')) {
+      setProfile(false);
+      trigger.focus();
+    }
+  });
+}
