@@ -31,12 +31,7 @@ def query(resource, actor, search="", sort="-id"):
         statement = statement.where(
             or_(*(getattr(resource.model, name).contains(search[:120], autoescape=True) for name in resource.search))
         )
-    allowed = {
-        "id",
-        "created_at",
-        "updated_at",
-        *(f.name for f in resource.fields if f.kind not in {"textarea", "image"}),
-    }
+    allowed = {"id", "created_at", "updated_at", *(f.name for f in resource.fields if f.kind != "textarea")}
     name = sort.lstrip("-")
     if name not in allowed:
         raise ValidationError({"sort": ["Choose a sortable declared field."]})

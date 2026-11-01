@@ -24,17 +24,7 @@
             <div>
               <dt>{{ field.label }}</dt>
               <dd class="preserve-lines">
-                {% if field.kind == "image" %}
-                  {% if getattr(record, field.name) %}
-                    <img class="image-preview"
-                         src="{{ getattr(record, field.name) }}"
-                         alt="{{ field.label }}">
-                  {% else %}
-                    No image
-                  {% endif %}
-                {% else %}
-                  {{ getattr(record, field.name)|field_value }}
-                {% endif %}
+                {{ getattr(record, field.name)|field_value }}
               </dd>
             </div>
           {% endfor %}
