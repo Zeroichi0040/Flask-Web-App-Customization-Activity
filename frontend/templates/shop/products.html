@@ -28,7 +28,7 @@
           <div class="product-card-footer">
             <strong>₱{{ '%.2f'|format(product.price) }}</strong>
             <a class="button primary small"
-               href="{{ url_for('shop.product', product_id=product.id) }}">View</a>
+               href="{{ url_for('shop.product', product_id=product.id) }}">Add to Cart</a>
           </div>
         </article>
       {% else %}
