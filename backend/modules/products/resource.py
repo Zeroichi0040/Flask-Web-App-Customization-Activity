@@ -11,6 +11,15 @@ resource = Resource(
     model=ProductsRecord,
     fields=(
         Field("name", "Name", kind="text", required=True, max_length=120, default=""),
+        Field(
+            "subheading",
+            "Subheading",
+            kind="text",
+            required=False,
+            max_length=160,
+            default="",
+            help="Optional. A short line shown under the product name, e.g. \"A little chocolate magic.\"",
+        ),
         Field("price", "Price", kind="decimal", required=True, minimum=0, max_length=120, default="0.00"),
         Field("description", "Description", kind="textarea", required=False, max_length=10000, default=""),
         Field(
