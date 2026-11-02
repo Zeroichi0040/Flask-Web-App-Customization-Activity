@@ -1,93 +1,212 @@
+
 {% extends "base.html" %}
 {% block title %}{{ product.name }}{% endblock %}
+
 {% block content %}
-  <section class="product-detail">
-    <a class="back-link" href="{{ url_for('shop.products') }}">← All products</a>
-    <div class="product-detail-layout">
-      <div class="product-gallery">
-        <div class="product-media large">
-          {% if gallery %}
-            <img id="product-main-photo"
-                 class="product-photo"
-                 src="{{ gallery[0] }}"
-                 alt="{{ product.name }}">
-          {% else %}
-            <img src="{{ url_for('static', filename='images/icons/basket.svg') }}"
-                 alt="{{ product.name }}">
-          {% endif %}
-        </div>
-        {% if gallery|length > 1 %}
-          <ul class="gallery-thumbs" aria-label="Photos of {{ product.name }}">
-            {% for photo in gallery %}
-              <li>
-                <a href="{{ photo }}"
-                   data-gallery-thumb
-                   {% if loop.first %}aria-current="true"{% endif %}
-                   aria-label="Show photo {{ loop.index }} of {{ gallery|length }}">
-                  <img src="{{ photo }}" alt="" loading="lazy">
-                </a>
-              </li>
-            {% endfor %}
-          </ul>
+<section class="product-detail-page">
+
+  <nav class="product-breadcrumb" aria-label="Breadcrumb">
+    <a href="{{ url_for('shop.products') }}">Products</a>
+    <span aria-hidden="true">›</span>
+    <span aria-current="page">{{ product.name }}</span>
+  </nav>
+
+  <div class="product-detail-layout">
+
+    <!-- Product gallery -->
+    <div class="product-gallery">
+
+      <div class="product-gallery-stage">
+        {% if gallery %}
+          <img
+            id="product-main-photo"
+            class="product-main-photo"
+            src="{{ gallery[0] }}"
+            alt="{{ product.name }}"
+          >
+        {% else %}
+          <img
+            id="product-main-photo"
+            class="product-main-photo product-main-photo--fallback"
+            src="{{ url_for('static', filename='images/icons/basket.svg') }}"
+            alt="{{ product.name }}"
+          >
         {% endif %}
       </div>
-      <div class="product-info">
-        <p class="eyebrow">PRODUCT</p>
-        <h1>{{ product.name }}</h1>
-        {% if product.subheading %}<p class="product-subheading">{{ product.subheading }}</p>{% endif %}
-        {% if product.variations %}
-          {% if current_user.is_authenticated %}
-            <p class="product-price" id="product-price">₱{{ '%.2f'|format(product.variations[0].price) }}</p>
-          {% else %}
-            <p class="product-price">from ₱{{ '%.2f'|format(product.from_price) }}</p>
-          {% endif %}
-        {% else %}
-          <p class="product-price">₱{{ '%.2f'|format(product.price) }}</p>
-        {% endif %}
-        <p class="lead preserve-lines">{{ product.description }}</p>
+
+      {% if gallery|length > 1 %}
+        <ul class="gallery-thumbs" aria-label="All product photos">
+          {% for photo in gallery %}
+            <li>
+              <button
+                type="button"
+                data-gallery-thumb="{{ loop.index0 }}"
+                class="gallery-thumb{% if loop.first %} is-active{% endif %}"
+                aria-label="Show photo {{ loop.index }}"
+                aria-pressed="{{ 'true' if loop.first else 'false' }}"
+              >
+                <img src="{{ photo }}" alt="" loading="lazy">
+              </button>
+            </li>
+          {% endfor %}
+        </ul>
+        
+        <div class="product-gallery-controls">
+          <button
+            class="gallery-arrow"
+            type="button"
+            data-gallery-prev
+            aria-label="Previous photo"
+          >←</button>
+
+          <div class="gallery-dots" aria-label="Product photos">
+            {% for photo in gallery %}
+              <button
+                type="button"
+                class="gallery-dot{% if loop.first %} is-active{% endif %}"
+                data-gallery-dot="{{ loop.index0 }}"
+                aria-label="Show photo {{ loop.index }}"
+                aria-pressed="{{ 'true' if loop.first else 'false' }}"
+              ></button>
+            {% endfor %}
+          </div>
+
+          <button
+            class="gallery-arrow"
+            type="button"
+            data-gallery-next
+            aria-label="Next photo"
+          >⟶</button>
+        </div>
+
+        
+      {% endif %}
+
+    </div>
+
+    <!-- Product information -->
+    <div class="product-info">
+
+      <h1 class="product-title">{{ product.name }}</h1>
+
+      {% if product.subheading %}
+        <p class="product-subheading">{{ product.subheading }}</p>
+      {% endif %}
+
+      {% if product.variations %}
         {% if current_user.is_authenticated %}
-          <form class="product-actions"
-                method="post"
-                action="{{ url_for('shop.cart_add', product_id=product.id) }}">
-            {{ form.hidden_tag() }}
-            {% if product.variations %}
-              <fieldset class="variation-picker">
-                <legend>Choose an option</legend>
+          <p class="product-price" id="product-price">
+            ₱{{ '%.2f'|format(product.variations[0].price) }}
+          </p>
+        {% else %}
+          <p class="product-price">
+            from ₱{{ '%.2f'|format(product.from_price) }}
+          </p>
+        {% endif %}
+      {% else %}
+        <p class="product-price">
+          ₱{{ '%.2f'|format(product.price) }}
+        </p>
+      {% endif %}
+
+      <p class="product-description">{{ product.description }}</p>
+
+      {% if current_user.is_authenticated %}
+
+        <form
+          class="product-purchase-form"
+          method="post"
+          action="{{ url_for('shop.cart_add', product_id=product.id) }}"
+        >
+          {{ form.hidden_tag() }}
+
+          {% if product.variations %}
+            <fieldset class="variation-picker">
+              <legend>Select variation</legend>
+
+              <div class="variation-options">
                 {% for variation in product.variations %}
                   <label class="variation-option">
-                    <input type="radio"
-                           name="variation_id"
-                           value="{{ variation.id }}"
-                           data-price="{{ '%.2f'|format(variation.price) }}"
-                           {% if loop.first %}checked{% endif %}
-                           required>
-                    <span>{{ variation.label }}</span>
-                    <strong>₱{{ '%.2f'|format(variation.price) }}</strong>
+                    <input
+                      type="radio"
+                      name="variation_id"
+                      value="{{ variation.id }}"
+                      data-price="{{ '%.2f'|format(variation.price) }}"
+                      {% if loop.first %}checked{% endif %}
+                      required
+                    >
+
+                    <span class="variation-option-copy">
+                      <span class="variation-option-name">
+                        {{ variation.label }}
+                      </span>
+                      <strong class="variation-option-price">
+                        ₱{{ '%.2f'|format(variation.price) }}
+                      </strong>
+                    </span>
                   </label>
                 {% endfor %}
-              </fieldset>
-            {% endif %}
-            {{ form.quantity.label }}
-            {{ form.quantity(class_='input', min=1, max=99) }}
-            <button class="button primary" type="submit">Add to cart</button>
-          </form>
-          <a class="button quiet" href="{{ url_for('shop.cart') }}">View cart</a>
-        {% else %}
-          {% if product.variations %}
-            <ul class="variation-list" aria-label="Options">
-              {% for variation in product.variations %}
-                <li>
-                  <span>{{ variation.label }}</span>
-                  <strong>₱{{ '%.2f'|format(variation.price) }}</strong>
-                </li>
-              {% endfor %}
-            </ul>
+              </div>
+            </fieldset>
           {% endif %}
-          <p class="hint">An account is needed to add items to a cart.</p>
-          <a class="button primary"
-             href="{{ url_for('auth.login_page', next=url_for('shop.product', product_id=product.id)) }}">Sign in to add to cart</a>
+
+          <!-- Keep the quantity field in the submitted form, defaulting to one. -->
+          {{ form.quantity(type="hidden", value=1) }}
+
+          <button class="button primary product-add-button" type="submit">
+            <img
+              src="{{ url_for('static', filename='images/icons/basket.svg') }}"
+              alt=""
+              aria-hidden="true"
+            >
+            Add to basket
+          </button>
+        </form>
+
+        <a class="product-view-cart" href="{{ url_for('shop.cart') }}">
+          View your basket
+        </a>
+
+      {% else %}
+
+        {% if product.variations %}
+          <div class="variation-picker">
+            <p class="variation-legend">Select variation</p>
+
+            <div class="variation-options">
+              {% for variation in product.variations %}
+                <div class="variation-option variation-option--guest">
+                  <span class="variation-option-copy">
+                    <span class="variation-option-name">
+                      {{ variation.label }}
+                    </span>
+                    <strong class="variation-option-price">
+                      ₱{{ '%.2f'|format(variation.price) }}
+                    </strong>
+                  </span>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
         {% endif %}
-      </div>
+
+        <p class="product-signin-note">
+          Sign in to add this treat to your basket.
+        </p>
+
+        <a
+          class="button primary product-add-button"
+          href="{{ url_for(
+            'auth.login_page',
+            next=url_for('shop.product', product_id=product.id)
+          ) }}"
+        >
+          Sign in to add to basket
+        </a>
+
+      {% endif %}
+
     </div>
-  </section>
+  </div>
+</section>
 {% endblock %}

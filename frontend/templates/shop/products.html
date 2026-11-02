@@ -1,46 +1,63 @@
+
 {% extends "base.html" %}
-{% block title %}Products{% endblock %}
+{% block title %}Our Products{% endblock %}
+
 {% block content %}
-  <section class="public-content">
-    <header class="page-heading">
-      <div>
-        <p class="eyebrow">SHOP</p>
-        <h1>Products</h1>
-      </div>
-    </header>
-    <div class="product-grid">
-      {% for product in products %}
-        <article class="product-card">
-          <a class="product-media"
-             href="{{ url_for('shop.product', product_id=product.id) }}"
-             aria-label="View {{ product.name }}">
-            {% if product.has_image %}
-              <img class="product-photo"
-                   src="{{ url_for('shop.product_image', product_id=product.id, v=product.version) }}"
-                   alt=""
-                   loading="lazy">
-            {% else %}
-              <img src="{{ url_for('static', filename='images/icons/basket.svg') }}" alt="">
-            {% endif %}
-          </a>
-          <h2><a href="{{ url_for('shop.product', product_id=product.id) }}">{{ product.name }}</a></h2>
-          <p>{{ product.description|truncate(100) }}</p>
-          {% if product.variations %}
-            <ul class="variation-chips" aria-label="Options">
-              {% for variation in product.variations %}
-                <li>{{ variation.label }} <strong>₱{{ '%.2f'|format(variation.price) }}</strong></li>
-              {% endfor %}
-            </ul>
+<section class="products-page">
+
+  <header class="products-heading">
+    <h1>Our Products</h1>
+    <p>Freshly picked sweetness just for you</p>
+  </header>
+
+  <div class="product-grid">
+    {% for product in products %}
+      <article class="product-card">
+
+        <a class="product-media product-card-media"
+           href="{{ url_for('shop.product', product_id=product.id) }}"
+           aria-label="View {{ product.name }}">
+
+          {% if product.has_image %}
+            <img
+              class="product-photo"
+              src="{{ url_for('shop.product_image', product_id=product.id, v=product.version) }}"
+              alt="{{ product.name }}"
+              loading="lazy">
+          {% else %}
+            <img
+              class="product-placeholder"
+              src="{{ url_for('static', filename='images/icons/basket.svg') }}"
+              alt="">
           {% endif %}
-          <div class="product-card-footer">
-            <strong>{% if product.variations %}from {% endif %}₱{{ '%.2f'|format(product.from_price) }}</strong>
-            <a class="button primary small"
-               href="{{ url_for('shop.product', product_id=product.id) }}">Add to Cart</a>
-          </div>
-        </article>
-      {% else %}
-        <p class="hint">No products yet.</p>
-      {% endfor %}
-    </div>
-  </section>
+
+          <span class="product-hover-action">
+            <img
+              class="basket-symbol"
+              src="{{ url_for('static', filename='images/icons/basket.svg') }}"
+              alt="">
+            ADD TO BASKET
+          </span>
+        </a>
+
+        <div class="product-card-info">
+          <h2>
+            <a href="{{ url_for('shop.product', product_id=product.id) }}">
+              {{ product.name }}
+            </a>
+          </h2>
+
+          <p class="product-card-price">
+            {% if product.variations %}from {% endif %}
+            ₱{{ '%.2f'|format(product.from_price) }}
+          </p>
+        </div>
+
+      </article>
+    {% else %}
+      <p class="hint">No products available yet.</p>
+    {% endfor %}
+  </div>
+
+</section>
 {% endblock %}

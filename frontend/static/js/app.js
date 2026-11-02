@@ -118,22 +118,109 @@ if (profileMenu) {
   });
 }
 
-// Product page: show the price of the chosen option, and swap the main photo when a thumbnail is clicked.
-const priceLabel = document.querySelector('#product-price');
+
+/* =========================================
+   PRODUCT PAGE
+   Variation price + image gallery
+========================================= */
+
+// Update displayed price when a variation is selected.
+const priceLabel = document.querySelector("#product-price");
+
 document.querySelectorAll('input[name="variation_id"]').forEach(option => {
-  option.addEventListener('change', () => {
-    if (priceLabel && option.checked) priceLabel.textContent = `\u20B1${option.dataset.price}`;
+  option.addEventListener("change", () => {
+    if (priceLabel && option.checked) {
+      priceLabel.textContent =
+        `₱${Number(option.dataset.price).toFixed(2)}`;
+    }
   });
 });
-const mainPhoto = document.querySelector('#product-main-photo');
-document.querySelectorAll('[data-gallery-thumb]').forEach(thumb => {
-  thumb.addEventListener('click', event => {
-    event.preventDefault();
-    if (mainPhoto) mainPhoto.src = thumb.href;
-    document.querySelectorAll('[data-gallery-thumb]').forEach(other => other.removeAttribute('aria-current'));
-    thumb.setAttribute('aria-current', 'true');
+
+// Product image gallery.
+const productGallery = document.querySelector(".product-gallery");
+const mainPhoto = document.querySelector("#product-main-photo");
+
+if (productGallery && mainPhoto) {
+  const thumbnails = [
+    ...productGallery.querySelectorAll("[data-gallery-thumb]")
+  ];
+
+  const dots = [
+    ...productGallery.querySelectorAll("[data-gallery-dot]")
+  ];
+
+  const previousButton = productGallery.querySelector("[data-gallery-prev]");
+  const nextButton = productGallery.querySelector("[data-gallery-next]");
+
+  let activePhoto = 0;
+
+  function showPhoto(index) {
+    if (!thumbnails.length) return;
+
+    // Wrap around when moving past either end of the gallery.
+    activePhoto = (index + thumbnails.length) % thumbnails.length;
+
+    const activeThumbnail = thumbnails[activePhoto];
+    const image = activeThumbnail.querySelector("img");
+
+    if (!image) return;
+
+    mainPhoto.src = image.src;
+    mainPhoto.alt = mainPhoto.alt || "Product photo";
+
+    // Update thumbnail selection.
+    thumbnails.forEach((thumbnail, i) => {
+      const active = i === activePhoto;
+
+      thumbnail.classList.toggle("is-active", active);
+      thumbnail.setAttribute("aria-pressed", String(active));
+    });
+
+    // Update pagination dots.
+    dots.forEach((dot, i) => {
+      const active = i === activePhoto;
+
+      dot.classList.toggle("is-active", active);
+      dot.setAttribute("aria-pressed", String(active));
+    });
+  }
+
+  // Thumbnail navigation.
+  thumbnails.forEach((thumbnail, index) => {
+    thumbnail.addEventListener("click", () => {
+      showPhoto(index);
+    });
   });
-});
+
+  // Previous and next buttons.
+  previousButton?.addEventListener("click", () => {
+    showPhoto(activePhoto - 1);
+  });
+
+  nextButton?.addEventListener("click", () => {
+    showPhoto(activePhoto + 1);
+  });
+
+  // Dot navigation.
+  dots.forEach((dot, index) => {
+    dot.addEventListener("click", () => {
+      showPhoto(index);
+    });
+  });
+
+  // Keyboard navigation while the gallery is focused.
+  productGallery.addEventListener("keydown", event => {
+    if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      showPhoto(activePhoto - 1);
+    }
+
+    if (event.key === "ArrowRight") {
+      event.preventDefault();
+      showPhoto(activePhoto + 1);
+    }
+  });
+}
 
 /* Home page: keep the header fixed at the top at all times. */
 
