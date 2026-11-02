@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% from 'components/pagination.html' import pager %}
+{% block title %}Orders{% endblock %}
+{% block content %}
+  <header class="page-heading">
+    <div>
+      <p class="eyebrow">ADMINISTRATION</p>
+      <h1>Orders</h1>
+      <p>Review customer orders and update their progress.</p>
+    </div>
+  </header>
+  {% for order in pagination.items %}
+    <article class="panel inquiry order-card">
+      <header>
+        <div>
+          <h2>Order #{{ order.id }}</h2>
+          <p>{{ order.full_name }} · {{ order.email }} · {{ order.created_at|date_label }}</p>
+        </div>
+        <span class="label-tag">{{ order.status|replace('_', ' ')|title }}</span>
+      </header>
+      <p>{{ order.address }}, {{ order.city }}{% if order.phone %} · {{ order.phone }}{% endif %}</p>
+      {% if order.notes %}<p class="preserve-lines">{{ order.notes }}</p>{% endif %}
+      <ul class="summary-list">
+        {% for item in order.items %}
+          <li>
+            <span>{{ item.product_name }}{% if item.variation_label %} ({{ item.variation_label }}){% endif %} × {{ item.quantity }}</span>
+            <span>₱{{ '%.2f'|format(item.subtotal) }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+      <p class="summary-total"><span>Total</span><strong>₱{{ '%.2f'|format(order.total) }}</strong></p>
+      <form class="actions" method="post" action="{{ url_for('admin.update_order_status', order_id=order.id) }}">
+        {{ status_forms[order.id].hidden_tag() }}
+        {{ status_forms[order.id].status(class_='form-control') }}
+        {{ status_forms[order.id].submit(class_='button quiet') }}
+      </form>
+    </article>
+  {% else %}
+    <section class="empty-state">
+      <h2>No orders yet.</h2>
+      <p>Orders placed through checkout will appear here.</p>
+    </section>
+  {% endfor %}
+  {{ pager(pagination) }}
+{% endblock %}

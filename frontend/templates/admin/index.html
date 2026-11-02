@@ -9,29 +9,17 @@
     </div>
   </header>
   <section class="summary-row">
-    <div>
-      <span>Accounts</span>
-      <strong>{{ counts.users }}</strong>
-    </div>
-    <div>
-      <span>Website pages</span>
-      <strong>{{ counts.pages }}</strong>
-    </div>
-    <div>
-      <span>Open messages</span>
-      <strong>{{ counts.inquiries }}</strong>
-    </div>
-    <div>
-      <span>Image storage</span>
-      <strong>{{ '%.1f'|format(counts.file_bytes / 1048576) }}<small> MiB</small>
-      </strong>
-    </div>
+    <div><span>Accounts</span><strong>{{ counts.users }}</strong></div>
+    <div><span>Website pages</span><strong>{{ counts.pages }}</strong></div>
+    <div><span>Open messages</span><strong>{{ counts.inquiries }}</strong></div>
+    <div><span>Image storage</span><strong>{{ '%.1f'|format(counts.file_bytes / 1048576) }}<small> MiB</small></strong></div>
   </section>
   <section class="panel">
     <h2>Administration tools</h2>
     <div class="actions">
       <a class="button quiet" href="{{ url_for('admin.users') }}">Manage accounts</a>
       <a class="button quiet" href="{{ url_for('admin.inquiries') }}">Review messages</a>
+      <a class="button quiet" href="{{ url_for('admin.orders') }}">Manage orders</a>
       <a class="button quiet" href="{{ url_for('admin.audit') }}">View audit log</a>
     </div>
   </section>

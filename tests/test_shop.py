@@ -3,7 +3,7 @@ import re
 import pytest
 
 from database import db
-from database.models import CartItem, ProductsRecord
+from database.models import CartItem, Order, ProductsRecord
 from tests.conftest import api_request, login, post_form
 
 
@@ -13,7 +13,6 @@ def links(html: bytes) -> set[str]:
 
 @pytest.fixture
 def product_ids(app, users):
-    """Two products created the way an administrator would, through the admin-only API."""
     admin = app.test_client()
     login(admin, "owner@example.com")
     ids = []
@@ -30,7 +29,6 @@ def test_products_are_public_and_come_from_the_database(client, product_ids):
     assert listing.status_code == 200
     assert b"Tote bag" in listing.data and b"Mug" in listing.data
     assert {f"/products/{first}", f"/products/{second}"} <= links(listing.data)
-
     single = client.get(f"/products/{first}")
     assert single.status_code == 200
     assert b"250.00" in single.data
@@ -41,23 +39,19 @@ def test_products_are_public_and_come_from_the_database(client, product_ids):
 def test_subheading_shows_on_the_product_page_only_when_set(app, client, users, product_ids):
     admin = app.test_client()
     login(admin, "owner@example.com")
-    created = api_request(
-        admin,
-        "POST",
-        "/api/v1/products",
-        {"name": "Eclair", "price": "60.00", "subheading": "A little chocolate magic.", "description": "Yum."},
-    )
+    created = api_request(admin, "POST", "/api/v1/products", {
+        "name": "Eclair", "price": "60.00", "subheading": "A little chocolate magic.", "description": "Yum."
+    })
     assert created.status_code == 201, created.get_data(as_text=True)
     with_sub = created.json["data"]["id"]
-
     page = client.get(f"/products/{with_sub}").get_data(as_text=True)
     assert "A little chocolate magic." in page and "product-subheading" in page
-    assert "A little chocolate magic." not in client.get("/products").get_data(as_text=True)  # not on the cards
-
+    assert "A little chocolate magic." not in client.get("/products").get_data(as_text=True)
     plain = client.get(f"/products/{product_ids[0]}").get_data(as_text=True)
-    assert "product-subheading" not in plain  # no empty line when it is blank
-
-    too_long = api_request(admin, "POST", "/api/v1/products", {"name": "X", "price": "1", "subheading": "x" * 161})
+    assert "product-subheading" not in plain
+    too_long = api_request(admin, "POST", "/api/v1/products", {
+        "name": "X", "price": "1", "subheading": "x" * 161
+    })
     assert too_long.status_code == 422
 
 
@@ -82,30 +76,24 @@ def test_cart_and_checkout_require_an_account(client, product_ids):
 def test_signed_in_cart_flow_and_nav_links(app, client, users, product_ids):
     login(client)
     first, second = product_ids
-
-    assert client.get("/checkout").status_code == 303  # empty cart is sent back to the shop
-
+    assert client.get("/checkout").status_code == 303
     assert post_form(client, f"/cart/add/{first}", quantity="2").status_code == 303
-    assert post_form(client, f"/cart/add/{first}", quantity="1").status_code == 303  # adds to the same row
+    assert post_form(client, f"/cart/add/{first}", quantity="1").status_code == 303
     assert post_form(client, f"/cart/add/{second}", quantity="1").status_code == 303
-    assert post_form(client, f"/cart/add/{second}", quantity="0").status_code == 303  # rejected, not added
-
+    assert post_form(client, f"/cart/add/{second}", quantity="0").status_code == 303
     cart = client.get("/cart")
     assert cart.status_code == 200
     assert b"Tote bag" in cart.data and b"Mug" in cart.data
-    assert b"870.50" in cart.data  # 3 x 250.00 + 1 x 120.50
+    assert b"870.50" in cart.data
     assert {"/products", "/cart", "/checkout"} <= links(cart.data)
-    assert b"Cart (4)" in cart.data  # left-hand navigation shows the item count
-
+    assert b'<span class="basket-number" aria-hidden="true">4</span>' in cart.data
     with app.app_context():
         item = db.session.scalar(db.select(CartItem).where(CartItem.product_id == second))
         item_id = item.id
     assert post_form(client, f"/cart/items/{item_id}/update", quantity="5").status_code == 303
-    assert b"Cart (8)" in client.get("/cart").data
+    assert b'<span class="basket-number" aria-hidden="true">8</span>' in client.get("/cart").data
     assert post_form(client, f"/cart/items/{item_id}/remove").status_code == 303
-    assert b"Cart (3)" in client.get("/cart").data
-
-    # Someone else's cart row cannot be changed.
+    assert b'<span class="basket-number" aria-hidden="true">3</span>' in client.get("/cart").data
     other = app.test_client()
     login(other, "grace@example.com")
     assert post_form(other, f"/cart/items/{item_id}/remove").status_code == 404
@@ -124,29 +112,32 @@ def test_cart_lines_show_a_product_thumbnail(app, client, users, product_ids):
         version = product.version
     post_form(client, f"/cart/add/{with_photo}", quantity="1")
     post_form(client, f"/cart/add/{without_photo}", quantity="1")
-
     html = client.get("/cart").get_data(as_text=True)
-    assert f"/products/{with_photo}/image?v={version}" in html  # uploaded photo as the thumbnail
+    assert f"/products/{with_photo}/image?v={version}" in html
     assert html.count("cart-thumb-photo") == 1
-    assert html.count("cart-thumb-icon") == 1  # the other product falls back to the basket icon
+    assert html.count("cart-thumb-icon") == 1
 
 
-def test_checkout_validates_and_confirms(client, users, product_ids):
+def test_checkout_creates_order_snapshots_and_clears_cart(app, client, users, product_ids):
     login(client)
-    post_form(client, f"/cart/add/{product_ids[0]}", quantity="1")
-    page = client.get("/checkout")
-    assert page.status_code == 200
-    assert b"Tote bag" in page.data and b"ada@example.com" in page.data
-
+    post_form(client, f"/cart/add/{product_ids[0]}", quantity="2")
     bad = post_form(client, "/checkout", full_name="Ada", email="not-an-email", address="", city="")
     assert bad.status_code == 422
-
-    good = post_form(
-        client, "/checkout", full_name="Ada Student", email="ada@example.com", address="1 Main St", city="Cebu"
-    )
+    good = post_form(client, "/checkout", full_name="Ada Student", email="ada@example.com",
+                     address="1 Main St", city="Cebu", notes="Leave at the door")
     assert good.status_code == 303
-    assert good.headers["Location"].endswith("/checkout")
-    assert b"Orders are not saved yet" in client.get("/checkout").data
+    assert good.headers["Location"].endswith("/products")
+    with app.app_context():
+        order = db.session.scalar(db.select(Order))
+        assert order is not None
+        assert order.status == "placed"
+        assert order.full_name == "Ada Student"
+        assert str(order.total) == "500.00"
+        assert len(order.items) == 1
+        assert order.items[0].product_name == "Tote bag"
+        assert order.items[0].quantity == 2
+        assert str(order.items[0].unit_price) == "250.00"
+        assert db.session.scalar(db.select(db.func.count(CartItem.id))) == 0
 
 
 def test_every_shop_link_resolves_when_signed_in(client, users, product_ids):

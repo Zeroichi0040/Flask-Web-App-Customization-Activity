@@ -1,15 +1,17 @@
 from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user, fresh_login_required
-from flask_wtf import FlaskForm
 from sqlalchemy import func, update
 from wtforms import BooleanField, SelectField, SubmitField
 from wtforms.fields import SelectChoice
 from wtforms.validators import DataRequired
+from flask_wtf import FlaskForm
 
 from backend.common.forms import ActionForm
 from backend.common.security import admin_required
+from backend.modules.admin.forms import OrderStatusForm
+from backend.common.security import admin_required
 from database import db
-from database.models import Attachment, AuditEvent, Inquiry, SiteState, User
+from database.models import Attachment, AuditEvent, Inquiry, Order, SiteState, User
 from database.models.page import Page
 
 bp = Blueprint("admin", __name__, url_prefix="/admin")
@@ -60,8 +62,6 @@ def edit_user(user_id):
     if form.validate_on_submit():
         if target.id == current_user.id:
             abort(409, description="Ask another administrator to change your own role or account status.")
-        # A real database write lock serializes role changes, including on SQLite.
-        # Refresh the actor after locking so a concurrent deactivation cannot act.
         locked = db.session.execute(update(SiteState).where(SiteState.id == 1).values(revision=SiteState.revision + 1))
         if locked.rowcount != 1:
             abort(503, description="Run database migrations before managing users.")
@@ -71,13 +71,8 @@ def edit_user(user_id):
         db.session.refresh(target)
         target.role, target.active = form.role.data, form.active.data
         target.session_version += 1
-        db.session.add(
-            AuditEvent(
-                user_id=current_user.id,
-                action="admin.account_changed",
-                subject=f"Account {target.id}: role or status changed",
-            )
-        )
+        db.session.add(AuditEvent(user_id=current_user.id, action="admin.account_changed",
+                                  subject=f"Account {target.id}: role or status changed"))
         db.session.commit()
         flash("Account updated. Previous sessions for that user were revoked.", "success")
         return redirect(url_for("admin.users"), code=303)
@@ -105,12 +100,48 @@ def resolve_inquiry(inquiry_id):
         abort(400)
     inquiry = db.get_or_404(Inquiry, inquiry_id)
     inquiry.resolved = True
-    db.session.add(
-        AuditEvent(user_id=current_user.id, action="admin.inquiry_resolved", subject=f"Inquiry {inquiry.id}")
-    )
+    db.session.add(AuditEvent(user_id=current_user.id, action="admin.inquiry_resolved",
+                              subject=f"Inquiry {inquiry.id}"))
     db.session.commit()
     flash("Message marked as resolved.", "success")
     return redirect(url_for("admin.inquiries"), code=303)
+
+
+@bp.get("/orders")
+@fresh_login_required
+@admin_required
+def orders():
+    pagination = db.paginate(
+        db.select(Order).order_by(Order.created_at.desc(), Order.id.desc()),
+        page=max(1, request.args.get("page", 1, type=int)),
+        per_page=20,
+        error_out=False,
+    )
+    status_forms = {order.id: OrderStatusForm(status=order.status) for order in pagination.items}
+    return render_template("admin/orders.html", pagination=pagination, status_forms=status_forms)
+
+
+@bp.post("/orders/<int:order_id>/status")
+@fresh_login_required
+@admin_required
+def update_order_status(order_id):
+    order = db.get_or_404(Order, order_id)
+    form = OrderStatusForm()
+    if not form.validate_on_submit():
+        abort(400)
+    if form.status.data == order.status:
+        flash(f"Order #{order.id} is already {order.status.replace('_', ' ')}.", "info")
+        return redirect(url_for("admin.orders"), code=303)
+    previous = order.status
+    order.status = form.status.data
+    db.session.add(AuditEvent(
+        user_id=current_user.id,
+        action="admin.order_status_changed",
+        subject=f"Order {order.id}: {previous} -> {order.status}",
+    ))
+    db.session.commit()
+    flash(f"Order #{order.id} status updated.", "success")
+    return redirect(url_for("admin.orders"), code=303)
 
 
 @bp.get("/audit")
