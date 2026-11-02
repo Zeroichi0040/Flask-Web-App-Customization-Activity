@@ -1,35 +1,105 @@
 {% extends "base.html" %}
 {% block title %}Welcome{% endblock %}
 {% block content %}
-  <section class="landing-hero">
-    <span class="pill">A fresh start</span>
-    <h1>{{ app_name }}</h1>
-    <p>{{ app_tagline }}</p>
-    <div class="actions">
-      <a class="button primary"
-         href="{{ url_for('dashboard.index') if current_user.is_authenticated else url_for('auth.register_page') }}">{{ 'Open application' if current_user.is_authenticated else 'Create your account' }} →</a>
-      <a class="button quiet" href="{{ url_for('public.contact') }}">Get in touch</a>
-    </div>
-  </section>
-  {% if pages %}
-    <section class="public-content">
-      <header class="page-heading">
-        <div>
-          <p class="eyebrow">FROM OUR WEBSITE</p>
-          <h2>Explore</h2>
-        </div>
-      </header>
-      <div class="content-grid">
-        {% for page in pages %}
-          <a class="content-card"
-             href="{{ url_for('public.page', slug=page.slug) }}">
-            <small>{{ page.updated_at|date_label }}</small>
-            <h2>{{ page.title }}</h2>
-            <p>{{ page.body|truncate(160) }}</p>
-            <span>Read more →</span>
-          </a>
-        {% endfor %}
+  {% set home_images = 'images/home/' %}
+  {% set product_images = 'images/products/' %}
+  {% set treats = [
+    (product_images ~ 'cinnamon-rolls-02.jpg', 'Fresh cinnamon rolls with icing'),
+    (product_images ~ 'cream-puff-01.jpg', 'A cream puff dusted with sugar'),
+    (product_images ~ 'macarons-02.jpg', 'A colorful assortment of macarons'),
+    (product_images ~ 'eclairs.jpg', 'Chocolate éclairs on a plate'),
+    (product_images ~ 'custard-tart-02.jpg', 'Golden custard tarts'),
+  ] %}
+  <div class="home">
+
+    <section class="home-hero" aria-labelledby="home-title">
+      <img class="hero-float hero-float--a" src="{{ url_for('static', filename=home_images ~ 'macaron-choco.png') }}" alt="" width="200" height="160">
+      <img class="hero-float hero-float--b" src="{{ url_for('static', filename=home_images ~ 'cream-puff.png') }}" alt="" width="200" height="180">
+      <img class="hero-float hero-float--c" src="{{ url_for('static', filename=home_images ~ 'macaron-vanilla.png') }}" alt="" width="200" height="160">
+      <img class="hero-float hero-float--d" src="{{ url_for('static', filename=home_images ~ 'eclair.png') }}" alt="" width="240" height="140">
+
+      <div class="hero-copy">
+        <h1 id="home-title" class="hero-title">
+          <span class="hero-welcome">Welcome to</span>
+          {# Keep the vector wordmark crisp; all pastry illustrations are now real photos. #}
+          <img src="{{ url_for('static', filename='images/logotype-hero.svg') }}"
+               alt="{{ app_name }}"
+               class="hero-logo-image"
+               width="520" height="126">
+        </h1>
+        <p>Step into our little world of sweetness, where every pastry is a sprinkle of magic and every bite brings a little happiness.</p>
+        <a class="button candy candy-blue" href="{{ url_for('shop.products') }}">Discover our Treats!</a>
       </div>
     </section>
-  {% endif %}
+
+    <section class="home-section home-treats" aria-labelledby="treats-title">
+      <div class="home-inner">
+        <h2 id="treats-title" class="section-title reveal">A Little Taste of Magic</h2>
+        <ul class="treat-row">
+          {% for file, description in treats %}
+            <li class="treat">
+              <img src="{{ url_for('static', filename=art ~ file) }}"
+                   alt="{{ description }}"
+                   width="200" height="200"
+                   loading="lazy">
+            </li>
+          {% endfor %}
+        </ul>
+        <p class="section-note reveal">Meet your new favorite treats! From fluffy cupcakes to dreamy cookies, there's a little sweetness for everyone.</p>
+        <a class="button candy candy-pink" href="{{ url_for('shop.products') }}">Explore all Treats</a>
+      </div>
+    </section>
+
+    <section class="home-section home-story" aria-labelledby="story-title">
+      <div class="home-inner">
+        <article class="story reveal">
+          <div class="story-copy">
+            <h2 id="story-title">Baked with Love,<br> Made for Magic</h2>
+            <p class="ornament" aria-hidden="true">❀˖°⋆౨ৎ˚⟡</p>
+            <p>At {{ app_name }}, we believe that the sweetest moments deserve the sweetest treats. Every creation brings together delightful flavors and a touch of fairytale charm.</p>
+          </div>
+          <img class="story-image"
+               src="{{ url_for('static', filename=home_images ~ 'pexels-gustavo-fring-3983706.jpg') }}"
+               alt="A box of cupcakes topped with cherries and macarons"
+               width="600" height="500"
+               loading="lazy">
+        </article>
+      </div>
+    </section>
+
+    {% if pages %}
+      <section class="home-section home-pages" aria-labelledby="pages-title">
+        <div class="home-inner">
+          <header class="page-heading">
+            <div>
+              <p class="eyebrow">FROM OUR WEBSITE</p>
+              <h2 id="pages-title">Explore</h2>
+            </div>
+          </header>
+          <div class="content-grid">
+            {% for page in pages %}
+              <a class="content-card"
+                 href="{{ url_for('public.page', slug=page.slug) }}">
+                <small>{{ page.updated_at|date_label }}</small>
+                <h2>{{ page.title }}</h2>
+                <p>{{ page.body|truncate(160) }}</p>
+                <span>Read more →</span>
+              </a>
+            {% endfor %}
+          </div>
+        </div>
+      </section>
+    {% endif %}
+
+    <section class="home-section home-cta">
+      <div class="home-inner">
+        <div class="cta-banner reveal">
+          <h2>Your Fairytale Awaits!</h2>
+          <p>Find your perfect treat and let the sweetness begin.</p>
+          <a class="button candy candy-pink" href="{{ url_for('shop.products') }}">Shop Now</a>
+        </div>
+      </div>
+    </section>
+
+  </div>
 {% endblock %}
