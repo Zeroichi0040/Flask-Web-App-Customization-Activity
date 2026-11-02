@@ -17,6 +17,7 @@
       <div class="product-info">
         <p class="eyebrow">PRODUCT</p>
         <h1>{{ product.name }}</h1>
+        {% if product.subheading %}<p class="product-subheading">{{ product.subheading }}</p>{% endif %}
         <p class="product-price">₱{{ '%.2f'|format(product.price) }}</p>
         <p class="lead preserve-lines">{{ product.description }}</p>
         {% if current_user.is_authenticated %}

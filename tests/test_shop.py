@@ -3,7 +3,7 @@ import re
 import pytest
 
 from database import db
-from database.models import ProductsRecord
+from database.models import CartItem, ProductsRecord
 from tests.conftest import api_request, login, post_form
 
 
@@ -36,6 +36,29 @@ def test_products_are_public_and_come_from_the_database(client, product_ids):
     assert b"250.00" in single.data
     assert "/products" in links(single.data)
     assert client.get("/products/999999").status_code == 404
+
+
+def test_subheading_shows_on_the_product_page_only_when_set(app, client, users, product_ids):
+    admin = app.test_client()
+    login(admin, "owner@example.com")
+    created = api_request(
+        admin,
+        "POST",
+        "/api/v1/products",
+        {"name": "Eclair", "price": "60.00", "subheading": "A little chocolate magic.", "description": "Yum."},
+    )
+    assert created.status_code == 201, created.get_data(as_text=True)
+    with_sub = created.json["data"]["id"]
+
+    page = client.get(f"/products/{with_sub}").get_data(as_text=True)
+    assert "A little chocolate magic." in page and "product-subheading" in page
+    assert "A little chocolate magic." not in client.get("/products").get_data(as_text=True)  # not on the cards
+
+    plain = client.get(f"/products/{product_ids[0]}").get_data(as_text=True)
+    assert "product-subheading" not in plain  # no empty line when it is blank
+
+    too_long = api_request(admin, "POST", "/api/v1/products", {"name": "X", "price": "1", "subheading": "x" * 161})
+    assert too_long.status_code == 422
 
 
 def test_logged_out_header_basket_goes_to_sign_in(client, product_ids):
@@ -106,6 +129,7 @@ def test_cart_lines_show_a_product_thumbnail(app, client, users, product_ids):
     assert f"/products/{with_photo}/image?v={version}" in html  # uploaded photo as the thumbnail
     assert html.count("cart-thumb-photo") == 1
     assert html.count("cart-thumb-icon") == 1  # the other product falls back to the basket icon
+
 
 def test_checkout_validates_and_confirms(client, users, product_ids):
     login(client)

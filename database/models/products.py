@@ -7,6 +7,7 @@ from database.models.base import OwnedRecord
 class ProductsRecord(OwnedRecord, db.Model):
     __tablename__ = "products"
     name = db.Column(db.String(120), nullable=False, default="")
+    subheading = db.Column(db.String(160), nullable=False, default="", server_default="")
     price = db.Column(db.Numeric(12, 2), nullable=False, default=0)
     description = db.Column(db.Text, nullable=False, default="")
     # The product photo is stored in the database (like the file library) so it survives
