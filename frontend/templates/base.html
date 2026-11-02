@@ -6,12 +6,10 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="description" content="{{ app_tagline }}">
     <title>{% block title %}Home{% endblock %} · {{ app_name }}</title>
-    <link rel="icon"
-          href="{{ url_for('static', filename='images/favicon.svg') }}">
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/tokens.css') }}">
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/app.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.svg') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/customer-orders.css') }}">
     <script type="module" src="{{ url_for('static', filename='js/app.js') }}"></script>
   </head>
   {% set admin_sidebar = current_user.is_authenticated and current_user.is_admin %}
@@ -24,46 +22,31 @@
       <div class="app-column">
         <header class="topbar">
           {% if admin_sidebar %}
-            <button class="button quiet menu-toggle"
-                    type="button"
-                    aria-controls="sidebar"
-                    aria-expanded="false">Menu</button>
+            <button class="button quiet menu-toggle" type="button" aria-controls="sidebar" aria-expanded="false">Menu</button>
           {% endif %}
-
           <nav class="topbar-nav" aria-label="Main navigation">
             <a href="{{ url_for('shop.products') }}"
                {% if request.endpoint in ('shop.products', 'shop.product') %}aria-current="page"{% endif %}>Products</a>
             <a href="{{ url_for('public.contact') }}"
                {% if request.endpoint == 'public.contact' %}aria-current="page"{% endif %}>Contact</a>
+            {% if current_user.is_authenticated and not current_user.is_admin %}
+              <a href="{{ url_for('shop.my_orders') }}"
+                 {% if request.endpoint in ('shop.my_orders', 'shop.my_order_detail') %}aria-current="page"{% endif %}>My Orders</a>
+            {% endif %}
           </nav>
-
           <a class="header-logo" href="{{ url_for('public.home') }}">
-            <img src="{{ url_for('static', filename='images/logotype-primary.svg') }}"
-                 alt="{{ app_name }}"
-                 class="header-logo-image">
+            <img src="{{ url_for('static', filename='images/logotype-primary.svg') }}" alt="{{ app_name }}" class="header-logo-image">
           </a>
-
           <div class="topbar-actions">
-            {# A cart needs an account: signed-out visitors sign in first, then continue to the cart. #}
-            {% set cart_href = url_for('shop.cart') if current_user.is_authenticated
-               else url_for('auth.login_page', next=url_for('shop.cart')) %}
-            <a class="cart-icon"
-               href="{{ cart_href }}"
+            {% set cart_href = url_for('shop.cart') if current_user.is_authenticated else url_for('auth.login_page', next=url_for('shop.cart')) %}
+            <a class="cart-icon" href="{{ cart_href }}"
                aria-label="Cart{% if cart_count %}, {{ cart_count }} items{% endif %}{% if not current_user.is_authenticated %} (sign in required){% endif %}">
-              <img class="basket-icon"
-                   src="{{ url_for('static', filename='images/icons/basket.svg') }}"
-                   alt="">
+              <img class="basket-icon" src="{{ url_for('static', filename='images/icons/basket.svg') }}" alt="">
               {% if cart_count %}<span class="basket-number" aria-hidden="true">{{ cart_count }}</span>{% endif %}
             </a>
-
             {% if current_user.is_authenticated %}
               <div class="profile-menu">
-                <button class="profile-trigger"
-                        type="button"
-                        aria-haspopup="true"
-                        aria-expanded="false"
-                        aria-controls="profile-dropdown"
-                        aria-label="Account menu for {{ current_user.display_name }}">
+                <button class="profile-trigger" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="profile-dropdown" aria-label="Account menu for {{ current_user.display_name }}">
                   <span class="avatar">{{ current_user.display_name[0]|upper }}</span>
                 </button>
                 <div class="profile-dropdown" id="profile-dropdown">
@@ -73,8 +56,10 @@
                       <span class="profile-name">{{ current_user.display_name }}</span>
                     </div>
                     <nav class="profile-card-nav" aria-label="Account">
-                      {# Orders is planned but there is no orders page yet; enable this link when one exists. #}
-                      <span class="profile-item is-disabled" aria-disabled="true">Orders <small>Coming soon</small></span>
+                      {% if not current_user.is_admin %}
+                        <a class="profile-item" href="{{ url_for('shop.my_orders') }}"
+                           {% if request.endpoint in ('shop.my_orders', 'shop.my_order_detail') %}aria-current="page"{% endif %}>My Orders</a>
+                      {% endif %}
                       <a class="profile-item" href="{{ url_for('account.profile') }}"
                          {% if request.blueprint == 'account' %}aria-current="page"{% endif %}>Account settings</a>
                       <form action="{{ url_for('auth.logout_page') }}" method="post">
@@ -86,12 +71,8 @@
                 </div>
               </div>
             {% else %}
-              <a class="signin-icon"
-                 href="{{ url_for('auth.login_page') }}"
-                 aria-label="Sign in">
-                <img class="user-icon"
-                     src="{{ url_for('static', filename='images/icons/user.svg') }}"
-                     alt="">
+              <a class="signin-icon" href="{{ url_for('auth.login_page') }}" aria-label="Sign in">
+                <img class="user-icon" src="{{ url_for('static', filename='images/icons/user.svg') }}" alt="">
               </a>
             {% endif %}
           </div>
@@ -103,10 +84,7 @@
           {% block content %}{% endblock %}
         </main>
         <footer class="site-footer">
-          <a href="{{ url_for('public.home') }}">
-            <img src="{{ url_for('static', filename='images/logo-footer.svg') }}"
-                 alt="{{ app_name }}"
-                 class="header-logo-image"></a>
+          <a href="{{ url_for('public.home') }}"><img src="{{ url_for('static', filename='images/logo-footer.svg') }}" alt="{{ app_name }}" class="header-logo-image"></a>
           <nav aria-label="Footer">
             <a href="{{ url_for('shop.products') }}">Products</a>
             <a href="{{ url_for('public.contact') }}">Contact</a>
@@ -115,44 +93,14 @@
         </footer>
       </div>
     </div>
-    
-    <!-- Cart drawer -->
     <div class="cart-drawer" id="cart-drawer" hidden>
-
-      <!-- Backdrop -->
-      <button
-        class="cart-drawer__backdrop"
-        type="button"
-        data-cart-close
-        aria-label="Close cart">
-      </button>
-
-      <!-- Drawer panel -->
-      <aside
-        class="cart-drawer__panel"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="cart-drawer-title"
-        tabindex="-1">
-
+      <button class="cart-drawer__backdrop" type="button" data-cart-close aria-label="Close cart"></button>
+      <aside class="cart-drawer__panel" role="dialog" aria-modal="true" aria-labelledby="cart-drawer-title" tabindex="-1">
         <header class="cart-drawer__header">
           <h2 id="cart-drawer-title">Your basket</h2>
-
-          <button
-            class="cart-drawer__close"
-            type="button"
-            data-cart-close
-            aria-label="Close cart">
-            &times;
-          </button>
+          <button class="cart-drawer__close" type="button" data-cart-close aria-label="Close cart">&times;</button>
         </header>
-
-        <div class="cart-drawer__body">
-          <div id="cart-drawer-content">
-            <p>Loading your basket...</p>
-          </div>
-        </div>
-
+        <div class="cart-drawer__body"><div id="cart-drawer-content"><p>Loading your basket...</p></div></div>
       </aside>
     </div>
   </body>

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Order #{{ order.id }}{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+  <p class="eyebrow"><a href="{{ url_for('shop.my_orders') }}">MY ORDERS</a></p>
+  <h1>Order #{{ order.id }}</h1>
+  <p>Placed {{ order.created_at.strftime('%b %d, %Y at %I:%M %p') }}</p>
+</section>
+
+<section class="panel order-status-panel">
+  <p class="eyebrow">ORDER STATUS</p>
+  <h2><span class="status-pill status-{{ order.status }}">{{ status_labels.get(order.status, order.status|replace('_', ' ')|title) }}</span></h2>
+  <p>We'll update this status as your order is processed. Payment is not collected by this demo.</p>
+</section>
+
+<section class="panel order-detail-panel">
+  <h2>Items</h2>
+  <div class="order-items">
+    {% for item in order.items %}
+      <div class="order-item-row">
+        <div>
+          <strong>{{ item.product_name }}</strong>
+          {% if item.variation_label %}<p class="muted">{{ item.variation_label }}</p>{% endif %}
+          <p class="muted">₱{{ '%.2f'|format(item.unit_price) }} × {{ item.quantity }}</p>
+        </div>
+        <strong>₱{{ '%.2f'|format(item.subtotal) }}</strong>
+      </div>
+    {% endfor %}
+  </div>
+  <div class="order-total-row"><strong>Total</strong><strong>₱{{ '%.2f'|format(order.total) }}</strong></div>
+</section>
+
+<section class="panel order-detail-panel">
+  <h2>Delivery information</h2>
+  <p><strong>{{ order.full_name }}</strong></p>
+  <p>{{ order.address }}<br>{{ order.city }}</p>
+  <p>{{ order.email }}</p>
+  {% if order.phone %}<p>{{ order.phone }}</p>{% endif %}
+  {% if order.notes %}<h3>Order notes</h3><p>{{ order.notes }}</p>{% endif %}
+</section>
+
+<p><a class="button quiet" href="{{ url_for('shop.my_orders') }}">Back to My Orders</a></p>
+{% endblock %}

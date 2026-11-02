@@ -147,3 +147,36 @@ def test_every_shop_link_resolves_when_signed_in(client, users, product_ids):
         for link in links(client.get(path).data):
             if link.startswith("/") and not link.startswith(("/static/", "/auth/logout")):
                 assert client.get(link).status_code == 200, f"{path} links to broken {link}"
+
+
+def test_customer_can_list_and_view_only_their_own_orders(app, client, users, product_ids):
+    login(client)
+    post_form(client, f"/cart/add/{product_ids[0]}", quantity="2")
+    placed = post_form(client, "/checkout", full_name="Ada Student", email="ada@example.com",
+                       address="1 Main St", city="Cebu", notes="Leave at the door")
+    assert placed.status_code == 303
+    with app.app_context():
+        order = db.session.scalar(db.select(Order))
+        order_id = order.id
+
+    listing = client.get("/my-orders")
+    assert listing.status_code == 200
+    assert f"/my-orders/{order_id}" in links(listing.data)
+    assert b"Order #" in listing.data and b"Placed" in listing.data
+
+    detail = client.get(f"/my-orders/{order_id}")
+    assert detail.status_code == 200
+    assert b"Tote bag" in detail.data
+    assert b"Ada Student" in detail.data
+    assert b"Leave at the door" in detail.data
+
+    other = app.test_client()
+    login(other, "grace@example.com")
+    assert other.get(f"/my-orders/{order_id}").status_code == 404
+
+
+def test_my_orders_requires_sign_in(client):
+    for path in ("/my-orders", "/my-orders/1"):
+        response = client.get(path)
+        assert response.status_code == 302
+        assert "/auth/login" in response.headers["Location"]

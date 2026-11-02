@@ -9,6 +9,7 @@ from backend.common.forms import ActionForm
 from backend.modules.shop.forms import CheckoutForm, QuantityForm
 from database import db
 from database.models import CartItem, Order, OrderItem, ProductImage, ProductsRecord
+from database.models.orders import ORDER_STATUSES
 
 bp = Blueprint("shop", __name__)
 
@@ -183,3 +184,27 @@ def checkout():
     return render_template("shop/checkout.html", form=form, lines=lines, total=total), (
         422 if request.method == "POST" else 200
     )
+
+
+@bp.get("/my-orders")
+@login_required
+def my_orders():
+    """Show only the signed-in customer's orders, newest first."""
+    orders = db.session.scalars(
+        db.select(Order)
+        .where(Order.user_id == current_user.id)
+        .order_by(Order.created_at.desc(), Order.id.desc())
+    ).all()
+    status_labels = dict(ORDER_STATUSES)
+    return render_template("shop/my_orders.html", orders=orders, status_labels=status_labels)
+
+
+@bp.get("/my-orders/<int:order_id>")
+@login_required
+def my_order_detail(order_id):
+    """Only return an order when it belongs to the signed-in customer."""
+    order = db.first_or_404(
+        db.select(Order).where(Order.id == order_id, Order.user_id == current_user.id)
+    )
+    status_labels = dict(ORDER_STATUSES)
+    return render_template("shop/my_order_detail.html", order=order, status_labels=status_labels)

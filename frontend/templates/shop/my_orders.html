@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}My Orders{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+  <p class="eyebrow">ACCOUNT</p>
+  <h1>My Orders</h1>
+  <p>Check the status of your orders and review what you purchased.</p>
+</section>
+
+{% if orders %}
+  <div class="orders-list">
+    {% for order in orders %}
+      <article class="panel order-card">
+        <div class="order-card-heading">
+          <div>
+            <h2>Order #{{ order.id }}</h2>
+            <p class="muted">Placed {{ order.created_at.strftime('%b %d, %Y at %I:%M %p') }}</p>
+          </div>
+          <span class="status-pill status-{{ order.status }}">{{ status_labels.get(order.status, order.status|replace('_', ' ')|title) }}</span>
+        </div>
+        <div class="order-card-summary">
+          <span>{{ order.items|length }} {{ 'item' if order.items|length == 1 else 'items' }}</span>
+          <strong>₱{{ '%.2f'|format(order.total) }}</strong>
+        </div>
+        <a class="button" href="{{ url_for('shop.my_order_detail', order_id=order.id) }}">View order details</a>
+      </article>
+    {% endfor %}
+  </div>
+{% else %}
+  <section class="panel empty-state">
+    <h2>No orders yet</h2>
+    <p>Once you place an order, it will appear here so you can track its status.</p>
+    <a class="button" href="{{ url_for('shop.products') }}">Browse products</a>
+  </section>
+{% endif %}
+{% endblock %}
