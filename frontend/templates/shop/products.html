@@ -25,8 +25,15 @@
           </a>
           <h2><a href="{{ url_for('shop.product', product_id=product.id) }}">{{ product.name }}</a></h2>
           <p>{{ product.description|truncate(100) }}</p>
+          {% if product.variations %}
+            <ul class="variation-chips" aria-label="Options">
+              {% for variation in product.variations %}
+                <li>{{ variation.label }} <strong>₱{{ '%.2f'|format(variation.price) }}</strong></li>
+              {% endfor %}
+            </ul>
+          {% endif %}
           <div class="product-card-footer">
-            <strong>₱{{ '%.2f'|format(product.price) }}</strong>
+            <strong>{% if product.variations %}from {% endif %}₱{{ '%.2f'|format(product.from_price) }}</strong>
             <a class="button primary small"
                href="{{ url_for('shop.product', product_id=product.id) }}">Add to Cart</a>
           </div>

@@ -30,7 +30,7 @@
         <ul class="summary-list">
           {% for line in lines %}
             <li>
-              <span>{{ line.product.name }} × {{ line.item.quantity }}</span>
+              <span>{{ line.product.name }}{% if line.variation %} ({{ line.variation.label }}){% endif %} × {{ line.item.quantity }}</span>
               <span>₱{{ '%.2f'|format(line.subtotal) }}</span>
             </li>
           {% endfor %}

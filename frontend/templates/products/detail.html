@@ -1,0 +1,31 @@
+{% extends "framework/resource_detail.html" %}
+{% block extra_details %}
+  <h2>Variations</h2>
+  {% if record.variations %}
+    <ul class="summary-list">
+      {% for variation in record.variations %}
+        <li>
+          <span>{{ variation.label }}</span>
+          <strong>₱{{ '%.2f'|format(variation.price) }}</strong>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="hint">No variations. The product's own price is used.</p>
+  {% endif %}
+  <h2>More photos</h2>
+  {% if record.images %}
+    <ul class="photo-current">
+      {% for image in record.images %}
+        <li>
+          <img class="image-preview"
+               src="{{ url_for('shop.product_photo', product_id=record.id, image_id=image.id) }}"
+               alt="Extra photo {{ loop.index }}"
+               loading="lazy">
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="hint">No extra photos.</p>
+  {% endif %}
+{% endblock %}

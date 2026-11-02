@@ -72,6 +72,8 @@ class Resource:
     policy: object = field(default_factory=OwnerPolicy)
     description: str = ""
     list_template: str = "framework/resource_list.html"
+    form_template: str = "framework/resource_form.html"
+    detail_template: str = "framework/resource_detail.html"
     on_save: Callable | None = None
     on_delete: Callable | None = None
 

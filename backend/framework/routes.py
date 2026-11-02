@@ -49,6 +49,7 @@ def build_html(resource):
     def edit_form(record=None):
         resource.policy.authorize(current_user, "update" if record else "create")
         form = ResourceForm(obj=record)
+        extra_errors = {}  # errors for values the form has no field for (a custom form template shows them)
         if form.validate_on_submit():
             # Image uploads are not plain values; the resource's on_save hook reads them from the request.
             values = {
@@ -64,11 +65,13 @@ def build_html(resource):
                 for name, messages in error.errors.items():
                     if hasattr(form, name):
                         getattr(form, name).errors.extend(messages)
+                    else:
+                        extra_errors[name] = messages
             else:
                 flash(f"{resource.singular} saved.", "success")
                 return redirect(url_for(resource.key + ".detail", identifier=saved.id), code=303)
         return render_template(
-            "framework/resource_form.html", resource=resource, form=form, record=record
+            resource.form_template, resource=resource, form=form, record=record, extra_errors=extra_errors
         ), 422 if request.method == "POST" else 200
 
     @bp.route("/new", methods=["GET", "POST"])
@@ -82,7 +85,7 @@ def build_html(resource):
     def detail(identifier):
         record = services.get_record(resource, current_user, identifier)
         return render_template(
-            "framework/resource_detail.html", resource=resource, record=record, action_form=ActionForm()
+            resource.detail_template, resource=resource, record=record, action_form=ActionForm()
         )
 
     @bp.route("/<int:identifier>/edit", methods=["GET", "POST"])

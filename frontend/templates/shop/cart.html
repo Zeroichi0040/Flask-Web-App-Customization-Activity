@@ -30,7 +30,8 @@
               </a>
               <div>
                 <a href="{{ url_for('shop.product', product_id=line.product.id) }}">{{ line.product.name }}</a>
-                <small>₱{{ '%.2f'|format(line.product.price) }} each</small>
+                {% if line.variation %}<small class="cart-variation">{{ line.variation.label }}</small>{% endif %}
+                <small>₱{{ '%.2f'|format(line.unit_price) }} each</small>
               </div>
               <form class="cart-quantity"
                     method="post"

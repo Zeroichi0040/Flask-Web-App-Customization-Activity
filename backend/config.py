@@ -36,9 +36,9 @@ def configuration(overrides=None):
         "PERMANENT_SESSION_LIFETIME": timedelta(hours=8),
         "REMEMBER_COOKIE_HTTPONLY": True,
         "REMEMBER_COOKIE_SECURE": env == "production",
-        "MAX_CONTENT_LENGTH": 3 * 1024 * 1024,
+        "MAX_CONTENT_LENGTH": 14 * 1024 * 1024,  # a product form: cover photo + 5 extra photos of up to 2 MiB
         "MAX_FORM_MEMORY_SIZE": 128 * 1024,
-        "MAX_FORM_PARTS": 40,
+        "MAX_FORM_PARTS": 60,
         "MAX_IMAGE_BYTES": 2 * 1024 * 1024,
         "USER_FILE_QUOTA": 20 * 1024 * 1024,
         "WTF_CSRF_TIME_LIMIT": 7200,

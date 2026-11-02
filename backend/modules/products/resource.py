@@ -35,6 +35,8 @@ resource = Resource(
     columns=("name", "price"),
     policy=AdminPolicy(),
     list_template="products/index.html",
+    form_template="products/form.html",
+    detail_template="products/detail.html",
     on_save=before_save,
     description="Add and edit the products shown in the shop. Deleting a product removes it from the shop.",
 )

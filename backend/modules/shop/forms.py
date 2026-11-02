@@ -17,4 +17,6 @@ class QuantityForm(FlaskForm):
     """Add to cart and cart quantity changes. CSRF is included."""
 
     quantity = IntegerField("Quantity", default=1, validators=[DataRequired(), NumberRange(min=1, max=99)])
+    # The chosen option of a product that has variations; ignored for products without any.
+    variation_id = IntegerField("Option", validators=[Optional()])
     submit = SubmitField("Add to cart")

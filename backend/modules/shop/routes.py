@@ -12,7 +12,7 @@ from flask_login import current_user, login_required
 from backend.common.forms import ActionForm
 from backend.modules.shop.forms import CheckoutForm, QuantityForm
 from database import db
-from database.models import CartItem, ProductsRecord
+from database.models import CartItem, ProductImage, ProductsRecord
 
 bp = Blueprint("shop", __name__)
 
@@ -32,7 +32,19 @@ def cart_lines():
     items = db.session.scalars(
         db.select(CartItem).where(CartItem.user_id == current_user.id).order_by(CartItem.id)
     ).all()
-    lines = [{"item": item, "product": item.product, "subtotal": item.product.price * item.quantity} for item in items]
+    lines = []
+    for item in items:
+        # An option has its own price; a cart row without one (products with no options) uses the product price.
+        unit_price = item.variation.price if item.variation else item.product.price
+        lines.append(
+            {
+                "item": item,
+                "product": item.product,
+                "variation": item.variation,
+                "unit_price": unit_price,
+                "subtotal": unit_price * item.quantity,
+            }
+        )
     return lines, sum((line["subtotal"] for line in lines), 0)
 
 
@@ -45,7 +57,12 @@ def products():
 @bp.get("/products/<int:product_id>")
 def product(product_id):
     record = db.get_or_404(ProductsRecord, product_id)
-    return render_template("shop/product.html", product=record, form=QuantityForm())
+    # The cover photo first, then the extra photos; the page shows thumbnails when there are two or more.
+    gallery = []
+    if record.has_image:
+        gallery.append(url_for("shop.product_image", product_id=record.id, v=record.version))
+    gallery += [url_for("shop.product_photo", product_id=record.id, image_id=image.id) for image in record.images]
+    return render_template("shop/product.html", product=record, form=QuantityForm(), gallery=gallery)
 
 
 @bp.get("/products/<int:product_id>/image")
@@ -60,6 +77,17 @@ def product_image(product_id):
     return response
 
 
+@bp.get("/products/<int:product_id>/photos/<int:image_id>")
+def product_photo(product_id, image_id):
+    """An extra gallery photo. Public like the product pages; each upload gets its own id, so it can be cached."""
+    image = db.first_or_404(
+        db.select(ProductImage).where(ProductImage.id == image_id, ProductImage.product_id == product_id)
+    )
+    response = send_file(BytesIO(image.image_data), mimetype=image.image_type)
+    response.headers["Cache-Control"] = "public, max-age=86400"
+    return response
+
+
 @bp.post("/cart/add/<int:product_id>")
 @login_required
 def cart_add(product_id):
@@ -68,15 +96,33 @@ def cart_add(product_id):
     if not form.validate_on_submit():
         flash("Choose a quantity from 1 to 99.", "error")
         return redirect(url_for("shop.product", product_id=record.id), code=303)
+    variation = None
+    if record.variations:
+        # A product with options is only sold as one of them, and the option must belong to this product.
+        variation = next((v for v in record.variations if v.id == form.variation_id.data), None)
+        if variation is None:
+            flash("Choose an option first.", "error")
+            return redirect(url_for("shop.product", product_id=record.id), code=303)
+    same_option = CartItem.variation_id.is_(None) if variation is None else CartItem.variation_id == variation.id
     item = db.session.scalar(
-        db.select(CartItem).where(CartItem.user_id == current_user.id, CartItem.product_id == record.id)
+        db.select(CartItem).where(
+            CartItem.user_id == current_user.id, CartItem.product_id == record.id, same_option
+        )
     )
     if item:
         item.quantity = min(item.quantity + form.quantity.data, 99)
     else:
-        db.session.add(CartItem(user_id=current_user.id, product_id=record.id, quantity=form.quantity.data))
+        db.session.add(
+            CartItem(
+                user_id=current_user.id,
+                product_id=record.id,
+                variation_id=variation.id if variation else None,
+                quantity=form.quantity.data,
+            )
+        )
     db.session.commit()
-    flash(f"Added {record.name} to your cart.", "success")
+    name = f"{record.name} ({variation.label})" if variation else record.name
+    flash(f"Added {name} to your cart.", "success")
     return redirect(url_for("shop.product", product_id=record.id), code=303)
 
 
