@@ -129,16 +129,16 @@
 }
 
 .input-wrap .input {
-  padding-right: 68px;
+  padding-right: 76px;
 }
 
 .input-toggle {
   position: absolute;
   top: 50%;
-  right: 8px;
+  right: 4px;
   transform: translateY(-50%);
-  min-height: 34px;
-  padding: 0 10px;
+  min-height: var(--tap);
+  padding: 0 12px;
   border: 0;
   border-radius: 8px;
   background: transparent;
@@ -152,41 +152,10 @@
   color: var(--ink);
 }
 
-/* ---- Buttons ---- */
-.form-card .button.primary {
-  min-height: 50px;
-  border-radius: 999px;
-  background: var(--accent);
-  box-shadow: 0 4px 0 #4f342b26, 0 12px 20px -10px #4f342b66;
-  font-size: .95rem;
-  transition: background-color .2s ease, box-shadow .2s ease, transform .2s ease;
-}
-
-.form-card .button.primary:hover {
-  background: #86d9ec;
-}
-
-.form-card .button.primary:active {
-  transform: translateY(2px);
-  box-shadow: 0 2px 0 #4f342b26;
-}
-
-.form-card .button.primary:disabled {
-  cursor: progress;
-  opacity: .75;
-  transform: none;
-}
-
-.form-card .button[aria-busy="true"]::after {
-  content: "";
-  width: 14px;
-  height: 14px;
-  border: 2px solid currentColor;
-  border-right-color: transparent;
-  border-radius: 50%;
-  animation: form-spin .7s linear infinite;
-}
-
+/* ---- Buttons ---- (the rounded candy look itself is shared, see app.css) */
+.form-card .button.primary { min-height: 50px; }
+.form-card .button.primary:disabled { cursor: progress; opacity: .75; transform: none; }
+.form-card .button[aria-busy="true"]::after { content: ""; width: 14px; height: 14px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: form-spin .7s linear infinite; }
 @keyframes form-spin { to { transform: rotate(360deg); } }
 
 /* ---- Small copy under forms ---- */
@@ -284,8 +253,7 @@
 }
 
 .checkout-layout {
-  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
-  gap: 32px;
+  gap: 32px; /* columns are set in app.css */
 }
 
 .checkout-form,
@@ -309,7 +277,7 @@
 /* Summary card */
 .order-summary {
   position: sticky;
-  top: 24px;
+  top: 104px; /* clears the sticky header */
   padding: clamp(20px, 3vw, 28px);
   border: 1px solid var(--line);
   border-radius: 20px;
@@ -408,10 +376,5 @@
 
 @media (max-width: 800px) {
   .order-summary { position: static; }
-  /* minmax(0, …) stops long names or prices from widening the track */
-  .checkout-layout { grid-template-columns: minmax(0, 1fr); gap: 24px; }
-}
-
-@media (max-width: 540px) {
-  .checkout-form .form-grid { grid-template-columns: 1fr; }
+  .checkout-layout { gap: 24px; }
 }

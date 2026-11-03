@@ -1,30 +1,48 @@
-/* Edit your brand here. Local assets and system fonts need no subscription. */
+/* Brand tokens. Edit colors, fonts and sizing here; everything else reads from them.
+   Local assets and system fonts need no subscription. */
 @font-face {
-  font-family: "Lexend"; 
+  font-family: "Lexend";
   src: url(../fonts/Lexend/Lexend-VariableFont_wght.ttf);
+  font-display: swap;
 }
 
 @font-face {
-  font-family: "East Botany"; 
+  font-family: "East Botany";
   src: url("../fonts/east-botany/East Botany.otf");
+  font-display: swap;
 }
 
 :root {
   --font: Lexend, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --h-font: East Botany, ui-serif, serif;
+  --h-font: "East Botany", ui-serif, serif;
+
+  /* Colors */
   --ink: #4F342B;
+  --ink-soft: #6f564f;        /* secondary text on cream */
   --muted: #647089;
   --paper: #FCF7F7;
   --surface: #ffffff;
   --line: #e3e7ef;
+  --line-warm: #efe3e1;       /* dividers and card borders on cream */
   --accent: #99E4F4;
+  --accent-hover: #86d9ec;
+  --accent-alt: #67e3ff;
   --accent-soft: #ffd9df;
   --accent-yellow: #F9EC9B;
+  --primary-color: #FF88B6;
+  --pink-deep: #ed78a4;       /* small pink accents */
   --danger: #ff4b66;
   --success: #137a58;
   --sidebar: #4F342B;
-  --radius: 12px;
 
-  --primary-color: #FF88B6;
-  --accent-alt: #67e3ff;
+  /* Shape, depth and sizing */
+  --radius: 12px;
+  --shadow-candy: 0 4px 0 #4f342b26, 0 12px 20px -10px #4f342b66;
+  --shadow-card: 0 1px 2px #4f342b0f;
+  --tap: 40px;                /* control size; becomes 44px on touch screens (see below) */
+  --gutter: 38px;             /* page side padding; shrinks on small screens */
 }
+
+@media (max-width: 800px), (pointer: coarse) { :root { --tap: 44px; } }
+@media (max-width: 1100px) { :root { --gutter: 25px; } }
+@media (max-width: 540px)  { :root { --gutter: 16px; } }

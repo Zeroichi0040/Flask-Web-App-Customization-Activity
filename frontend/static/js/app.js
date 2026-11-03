@@ -32,6 +32,23 @@ if (menu && sidebar) {
   });
 }
 
+/* Header menu on small screens: the links fold into a dropdown under the header. */
+const navToggle = document.querySelector('.nav-toggle');
+const topbar = document.querySelector('.topbar');
+if (navToggle && topbar) {
+  const setNav = (open, restoreFocus = false) => {
+    topbar.classList.toggle('nav-open', open);
+    navToggle.setAttribute('aria-expanded', String(open));
+    if (!open && restoreFocus) navToggle.focus();
+  };
+  navToggle.addEventListener('click', () => setNav(!topbar.classList.contains('nav-open')));
+  document.addEventListener('click', event => { if (!topbar.contains(event.target)) setNav(false); });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && topbar.classList.contains('nav-open')) setNav(false, true);
+  });
+  window.matchMedia('(max-width:800px)').addEventListener('change', () => setNav(false));
+}
+
 document.addEventListener('submit', event => {
   if (event.target.dataset.confirm && !window.confirm(event.target.dataset.confirm)) event.preventDefault();
 });
