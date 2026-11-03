@@ -224,27 +224,3 @@ if (productGallery && mainPhoto) {
     }
   });
 }
-
-/* Home page: keep the header fixed at the top at all times. */
-
-document.addEventListener("DOMContentLoaded", () => {
-  const header = document.querySelector(".topbar");
-
-  if (!header || !document.querySelector(".home")) return;
-
-  // Reserve the header's original space in the document.
-  const spacer = document.createElement("div");
-  spacer.className = "topbar-fixed-spacer";
-
-  header.before(spacer);
-
-  function updateHeaderSpace() {
-    spacer.style.height = `${header.offsetHeight}px`;
-  }
-
-  header.classList.add("is-fixed");
-  updateHeaderSpace();
-
-  window.addEventListener("resize", updateHeaderSpace);
-});
-

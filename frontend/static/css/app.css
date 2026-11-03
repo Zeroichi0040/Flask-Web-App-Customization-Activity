@@ -1191,29 +1191,16 @@ body .main-content:has(> .home) > .notice {
   margin: 16px auto 0;
 }
 
-/* Header on the home page: flat pink bar, no logo (the hero carries the brand), nav left, icons right. */
+/* Header on the home page: a flat pink bar that meets the hero's stripes.
+   Nav, logo and icons keep the shared layout; the bar is sticky inside the content column,
+   so with the admin sidebar it never slides over the sidebar. */
 body:has(.home) .topbar {
-  grid-template-columns: 1fr auto;
-  grid-template-areas: "nav actions";
   min-height: 68px;
   padding-bottom: 16px;
 }
 
-body.has-sidebar:has(.home) .topbar {
-  grid-template-columns: auto 1fr auto;
-  grid-template-areas: "toggle nav actions";
-}
-
 body:has(.home) .topbar::before {
   mask: none;
-}
-
-body:has(.home) .header-logo {
-  display: none;
-}
-
-body:has(.home) .topbar-nav {
-  justify-self: start;
 }
 
 .home-inner {
@@ -1344,38 +1331,187 @@ body:has(.home) .topbar-nav {
 .candy-pink:hover { background: #ff76aa; }
 
 /* ---- A Little Taste of Magic ---- */
+.home-treats .home-inner {
+  container: treats / inline-size;
+  text-align: center;
+}
+
+.treats-heading {
+  max-width: 40rem;
+  margin: 0 auto 28px;
+}
+
+.treats-heading .section-title {
+  margin-bottom: 12px;
+}
+
+.treats-heading .section-note {
+  margin: 0 auto;
+  color: var(--ink);
+  font-size: 1.05rem;
+  line-height: 1.65;
+  text-wrap: pretty;
+}
+
 .treat-row {
+  --treat-gap: clamp(14px, 2vw, 22px);
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 14px;
+  gap: var(--treat-gap);
   margin: 0;
-  padding: 0;
+  padding: clamp(14px, 2.2vw, 26px);
   list-style: none;
+  border-radius: 28px;
+  background: color-mix(in srgb, var(--accent-soft) 38%, var(--paper));
 }
 
 .treat {
-  flex: 0 1 calc((100% - 56px) / 5);
-  padding: 10px;
-  border-radius: 24px;
-  background: var(--stripe-light);
-  box-shadow: 0 12px 24px -18px #4f342b99;
-  animation: home-rise .6s ease-out backwards;
+  flex: 0 1 calc((100% - 4 * var(--treat-gap)) / 5);
+  min-width: 0;
+  text-align: left;
 }
 
-.treat:nth-child(2) { animation-delay: .08s; }
-.treat:nth-child(3) { animation-delay: .16s; }
-.treat:nth-child(4) { animation-delay: .24s; }
-.treat:nth-child(5) { animation-delay: .32s; }
+.treat-card {
+  height: 100%;
+}
 
-.treat img {
+.treat-media {
+  position: relative;
+  display: block;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border: 1px solid #d7c8c5;
+  border-radius: 16px;
+  background: var(--accent-soft);
+  isolation: isolate;
+}
+
+.treat-media img.treat-photo {
   display: block;
   width: 100%;
-  aspect-ratio: 1;
-  padding: 8px;
-  border-radius: 16px;
+  height: 100%;
   object-fit: cover;
-  background: radial-gradient(circle at 30% 20%, #fff, #fff0e8);
+  transition: transform .35s ease;
+}
+
+.treat-media img.treat-placeholder {
+  position: absolute;
+  inset: 0;
+  width: 32%;
+  height: 32%;
+  margin: auto;
+  object-fit: contain;
+  opacity: .7;
+}
+
+.treat-card:hover .treat-photo,
+.treat-card:focus-within .treat-photo {
+  transform: scale(1.045);
+}
+
+/* Add-to-basket strip: slides up on hover or keyboard focus, always shown on touch screens. */
+.treat-action {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px 10px;
+  background: color-mix(in srgb, var(--accent) 92%, transparent);
+  color: var(--ink);
+  font-size: .76rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(100%);
+  transition: opacity .22s ease, transform .22s ease;
+}
+
+.treat-action-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+.treat-card:hover .treat-action,
+.treat-card:focus-within .treat-action {
+  opacity: 1;
+  transform: none;
+}
+
+@media (hover: none) {
+  .treat-action {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.treat-info {
+  padding: 12px 2px 4px;
+}
+
+.treat-info h3 {
+  margin: 0 0 4px;
+  font-size: clamp(1.05rem, 1.6vw, 1.25rem);
+  line-height: 1.25;
+  letter-spacing: -.01em;
+}
+
+.treat-info h3 a {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.treat-info h3 a:hover {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+}
+
+.treat-blurb {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin: 0 0 8px;
+  font-size: .875rem;
+  line-height: 1.5;
+}
+
+.treat-price {
+  margin: 0;
+  font-size: .95rem;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.treats-empty {
+  max-width: 30rem;
+  margin: 0 auto;
+  padding: 28px 20px;
+  border: 2px dashed var(--accent-soft);
+  border-radius: 20px;
+}
+
+.treats-cta {
+  margin-top: 32px;
+}
+
+/* Cards per row follow the width of the section, so the admin sidebar is accounted for too. */
+@container treats (max-width: 900px) {
+  .treat { flex-basis: calc((100% - 2 * var(--treat-gap)) / 3); }
+}
+
+@container treats (max-width: 540px) {
+  .treat { flex-basis: calc((100% - var(--treat-gap)) / 2); }
+  .treat-action { font-size: .68rem; gap: 6px; padding-inline: 6px; }
 }
 
 /* ---- Baked with Love ---- */
@@ -1391,19 +1527,27 @@ body:has(.home) .topbar-nav {
   padding: clamp(32px, 5vw, 72px);
 }
 
+.story-mark {
+  display: block;
+  width: 64px;
+  height: auto;
+  margin: 0 0 18px;
+}
+
 .story-copy h2 {
-  margin-bottom: 14px;
-  color: #f35b95;
+  margin-bottom: 12px;
+  color: #e6417d; /* deeper than the brand pink so the heading reads clearly on the cream page */
   font-size: clamp(1.9rem, 3.4vw, 2.7rem);
   line-height: 1.2;
 }
 
 .ornament {
   display: block;
-  margin: 0 0 22px;
-  color: var(--accent-soft);
+  margin: 0 0 18px;
+  color: var(--ink);
+  opacity: .75;
   font-family: var(--font);
-  font-size: 1.35rem;
+  font-size: 1.15rem;
   font-weight: 600;
   letter-spacing: .08em;
   line-height: 1.4;
@@ -1413,7 +1557,12 @@ body:has(.home) .topbar-nav {
   max-width: 30em;
   margin: 0;
   color: var(--ink);
-  font-size: 1.02rem;
+  font-size: 1.05rem;
+  line-height: 1.7;
+}
+
+.story-copy .ornament {
+  margin-bottom: 14px;
 }
 
 .story-image {
@@ -1492,12 +1641,6 @@ body:has(.home) .topbar-nav {
   }
 }
 
-@media(max-width:900px) {
-  .treat {
-    flex-basis: calc((100% - 28px) / 3);
-  }
-}
-
 @media(max-width:800px) {
   .story {
     grid-template-columns: 1fr;
@@ -1525,12 +1668,6 @@ body:has(.home) .topbar-nav {
   .hero-float--b { left: -16px; top: auto; bottom: 56px; width: 112px; }
   .hero-float--c { right: -26px; top: 12px; width: 108px; }
   .hero-float--d { right: -30px; top: auto; bottom: 48px; width: 138px; }
-}
-
-@media(max-width:540px) {
-  .treat {
-    flex-basis: calc((100% - 14px) / 2);
-  }
 }
 
 .content-grid {
@@ -2724,74 +2861,6 @@ body.cart-drawer-open {
   max-width: 120px;
   max-height: 120px;
 }
-/* =========================================
-   PERMANENTLY FIXED HOMEPAGE HEADER
-========================================= */
-
-.home ~ .topbar,
-.topbar.is-fixed {
-  position: fixed !important;
-  top: 0;
-  left: 0;
-  right: 0;
-
-  width: 100%;
-  z-index: 1000;
-
-  margin: 0;
-}
-
-/* Keep the header's original layout and centered logo */
-
-.topbar.is-fixed {
-  display: grid !important;
-
-  grid-template-columns: 1fr auto 1fr !important;
-  grid-template-areas: "nav logo actions" !important;
-
-  align-items: center;
-}
-
-.topbar.is-fixed .topbar-nav {
-  grid-area: nav;
-  justify-self: start;
-}
-
-.topbar.is-fixed .header-logo {
-  grid-area: logo;
-  justify-self: center;
-  margin: 0;
-}
-
-.topbar.is-fixed .topbar-actions {
-  grid-area: actions;
-  justify-self: end;
-}
-
-/* Reserve the header's original document space */
-
-.topbar-fixed-spacer {
-  display: block;
-  width: 100%;
-  flex: 0 0 auto;
-}
-
-/* Mobile layout */
-
-@media (max-width: 800px) {
-  .topbar.is-fixed {
-    grid-template-columns: auto 1fr auto !important;
-    grid-template-areas:
-      "toggle logo actions"
-      "nav nav nav" !important;
-  }
-
-  .topbar.is-fixed .header-logo {
-    justify-self: center;
-  }
-}
-
-
 /* =========================================
    PASTRYDALE — SINGLE PRODUCT PAGE
 ========================================= */

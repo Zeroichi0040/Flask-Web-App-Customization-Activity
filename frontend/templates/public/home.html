@@ -2,14 +2,8 @@
 {% block title %}Welcome{% endblock %}
 {% block content %}
   {% set home_images = 'images/home/' %}
-  {% set product_images = 'images/products/' %}
-  {% set treats = [
-    (product_images ~ 'cinnamon-rolls-02.jpg', 'Fresh cinnamon rolls with icing'),
-    (product_images ~ 'cream-puff-01.jpg', 'A cream puff dusted with sugar'),
-    (product_images ~ 'macarons-02.jpg', 'A colorful assortment of macarons'),
-    (product_images ~ 'eclairs.jpg', 'Chocolate éclairs on a plate'),
-    (product_images ~ 'custard-tart-02.jpg', 'Golden custard tarts'),
-  ] %}
+  {# The view passes the newest active products as `featured_products`. #}
+  {% set treats = (featured_products or [])[:5] %}
   <div class="home">
 
     <section class="home-hero" aria-labelledby="home-title">
@@ -34,19 +28,51 @@
 
     <section class="home-section home-treats" aria-labelledby="treats-title">
       <div class="home-inner">
-        <h2 id="treats-title" class="section-title reveal">A Little Taste of Magic</h2>
-        <ul class="treat-row">
-          {% for file, description in treats %}
-            <li class="treat">
-              <img src="{{ url_for('static', filename=art ~ file) }}"
-                   alt="{{ description }}"
-                   width="200" height="200"
-                   loading="lazy">
-            </li>
-          {% endfor %}
-        </ul>
-        <p class="section-note reveal">Meet your new favorite treats! From fluffy cupcakes to dreamy cookies, there's a little sweetness for everyone.</p>
-        <a class="button candy candy-pink" href="{{ url_for('shop.products') }}">Explore all Treats</a>
+        <header class="treats-heading reveal">
+          <h2 id="treats-title" class="section-title">A Little Taste of Magic</h2>
+          <p class="section-note">Meet your new favorite treats! From fluffy cupcakes to dreamy cookies, there's a little sweetness for everyone.</p>
+        </header>
+
+        {% if treats %}
+          <ul class="treat-row">
+            {% for product in treats %}
+              <li class="treat">
+                <article class="treat-card">
+                  {# The photo link repeats the name link below, so keyboards and screen readers skip it. #}
+                  <a class="treat-media"
+                     href="{{ url_for('shop.product', product_id=product.id) }}"
+                     tabindex="-1" aria-hidden="true">
+                    {% if product.has_image %}
+                      <img class="treat-photo"
+                           src="{{ url_for('shop.product_image', product_id=product.id, v=product.version) }}"
+                           alt=""
+                           width="400" height="400"
+                           loading="lazy">
+                    {% else %}
+                      <img class="treat-placeholder"
+                           src="{{ url_for('static', filename='images/icons/basket.svg') }}"
+                           alt="">
+                    {% endif %}
+                    <span class="treat-action">
+                      <img class="treat-action-icon" src="{{ url_for('static', filename='images/icons/basket.svg') }}" alt="">
+                      Add to basket
+                    </span>
+                  </a>
+                  <div class="treat-info">
+                    <h3><a href="{{ url_for('shop.product', product_id=product.id) }}">{{ product.name }}</a></h3>
+                    {% set blurb = product.subheading or product.description %}
+                    {% if blurb %}<p class="treat-blurb">{{ blurb|truncate(90) }}</p>{% endif %}
+                    <p class="treat-price">{% if product.variations %}from {% endif %}₱{{ '%.2f'|format(product.from_price) }}</p>
+                  </div>
+                </article>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="treats-empty">Our bakers are busy in the kitchen. Fresh treats will appear here soon.</p>
+        {% endif %}
+
+        <a class="button candy candy-pink treats-cta" href="{{ url_for('shop.products') }}">Explore all Treats</a>
       </div>
     </section>
 
@@ -54,6 +80,10 @@
       <div class="home-inner">
         <article class="story reveal">
           <div class="story-copy">
+            <img class="story-mark"
+                 src="{{ url_for('static', filename='images/logomark.svg') }}"
+                 alt=""
+                 width="64" height="84">
             <h2 id="story-title">Baked with Love,<br> Made for Magic</h2>
             <p class="ornament" aria-hidden="true">❀˖°⋆౨ৎ˚⟡</p>
             <p>At {{ app_name }}, we believe that the sweetest moments deserve the sweetest treats. Every creation brings together delightful flavors and a touch of fairytale charm.</p>

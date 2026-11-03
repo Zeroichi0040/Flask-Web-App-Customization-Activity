@@ -36,7 +36,7 @@
             {% endif %}
           </nav>
           <a class="header-logo" href="{{ url_for('public.home') }}">
-            <img src="{{ url_for('static', filename='images/logotype-primary.svg') }}" alt="{{ app_name }}" class="header-logo-image">
+            <img src="{{ url_for('static', filename='images/logotype-hero.svg') }}" alt="{{ app_name }}" class="header-logo-image">
           </a>
           <div class="topbar-actions">
             {% set cart_href = url_for('shop.cart') if current_user.is_authenticated else url_for('auth.login_page', next=url_for('shop.cart')) %}
