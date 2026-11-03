@@ -1,19 +1,20 @@
 {% extends "base.html" %}
 {% block title %}Cart{% endblock %}
 {% block content %}
-  <section class="cart-page">
+  {% set item_count = lines|sum(attribute='item.quantity') if lines else 0 %}
+  <section id="cart-page-content" class="cart-page" data-cart-count="{{ item_count }}">
     <a class="back-link" href="{{ url_for('shop.products') }}">← Continue shopping</a>
     <header class="page-heading">
       <div>
         <p class="eyebrow">CART</p>
-        <h1>Your cart</h1>
+        <h1>Your cart{% if item_count %} <small>({{ item_count }} {{ 'item' if item_count == 1 else 'items' }})</small>{% endif %}</h1>
       </div>
     </header>
     {% if lines %}
-      <div class="panel">
-        <ul class="summary-list">
+      <div class="cart-panel">
+        <ul class="cart-lines" aria-label="Items in your basket">
           {% for line in lines %}
-            <li class="cart-line">
+            <li class="cart-line" data-item="{{ line.item.id }}">
               <a class="cart-thumb"
                  href="{{ url_for('shop.product', product_id=line.product.id) }}"
                  aria-label="View {{ line.product.name }}">
@@ -28,40 +29,71 @@
                        alt="">
                 {% endif %}
               </a>
-              <div>
-                <a href="{{ url_for('shop.product', product_id=line.product.id) }}">{{ line.product.name }}</a>
+
+              <div class="cart-line-info">
+                <div class="cart-line-top">
+                  <a class="cart-line-name"
+                     href="{{ url_for('shop.product', product_id=line.product.id) }}">{{ line.product.name }}</a>
+
+                  <form class="cart-remove-form"
+                        method="post"
+                        action="{{ url_for('shop.cart_remove', item_id=line.item.id) }}">
+                    {{ action_form.csrf_token }}
+                    <button class="cart-remove" type="submit"
+                            title="Remove"
+                            aria-label="Remove {{ line.product.name }} from your basket">
+                      <svg width="24" height="24" viewBox="0 0 28 28" fill="none" aria-hidden="true" focusable="false">
+                        <path d="M4.5 7.5h19M10.5 7.5V5.3c0-.7.6-1.3 1.3-1.3h4.4c.7 0 1.3.6 1.3 1.3v2.2M6.8 7.5l1.1 15.2c.1 1 .9 1.8 1.9 1.8h8.4c1 0 1.8-.8 1.9-1.8l1.1-15.2M11.5 12v8.5M16.5 12v8.5"
+                              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </button>
+                  </form>
+                </div>
+
                 {% if line.variation %}<small class="cart-variation">{{ line.variation.label }}</small>{% endif %}
-                <small>₱{{ '%.2f'|format(line.unit_price) }} each</small>
+                <small class="cart-line-unit">₱{{ '%.2f'|format(line.unit_price) }} each</small>
+
+                <div class="cart-line-bottom">
+                  <form class="cart-quantity"
+                        method="post"
+                        action="{{ url_for('shop.cart_update', item_id=line.item.id) }}">
+                    {{ action_form.csrf_token }}
+                    <div class="qty" role="group" aria-label="Quantity for {{ line.product.name }}">
+                      <button class="qty-btn" type="button" data-qty-step="-1"
+                              aria-label="Decrease quantity of {{ line.product.name }}"
+                              {% if line.item.quantity <= 1 %}disabled{% endif %}>−</button>
+                      <input id="quantity-{{ line.item.id }}"
+                             class="qty-input"
+                             name="quantity"
+                             type="number"
+                             min="1"
+                             max="99"
+                             value="{{ line.item.quantity }}"
+                             aria-label="Quantity for {{ line.product.name }}">
+                      <button class="qty-btn" type="button" data-qty-step="1"
+                              aria-label="Increase quantity of {{ line.product.name }}"
+                              {% if line.item.quantity >= 99 %}disabled{% endif %}>+</button>
+                    </div>
+                    {# Lets the Enter key save a typed quantity when JavaScript is off. #}
+                    <button class="sr-only" type="submit">Update quantity</button>
+                  </form>
+
+                  <strong class="cart-line-total">₱{{ '%.2f'|format(line.subtotal) }}</strong>
+                </div>
               </div>
-              <form class="cart-quantity"
-                    method="post"
-                    action="{{ url_for('shop.cart_update', item_id=line.item.id) }}">
-                {{ action_form.csrf_token }}
-                <label class="sr-only" for="quantity-{{ line.item.id }}">Quantity for {{ line.product.name }}</label>
-                <input id="quantity-{{ line.item.id }}"
-                       class="input"
-                       name="quantity"
-                       type="number"
-                       min="1"
-                       max="99"
-                       value="{{ line.item.quantity }}">
-                <button class="button quiet small" type="submit">Update</button>
-              </form>
-              <strong>₱{{ '%.2f'|format(line.subtotal) }}</strong>
-              <form method="post" action="{{ url_for('shop.cart_remove', item_id=line.item.id) }}">
-                {{ action_form.csrf_token }}
-                <button class="button quiet small" type="submit">Remove</button>
-              </form>
             </li>
           {% endfor %}
         </ul>
-        <p class="summary-total"><span>Total</span><strong>₱{{ '%.2f'|format(total) }}</strong></p>
-        <a class="button primary" href="{{ url_for('shop.checkout') }}">Checkout</a>
+
+        <div class="cart-summary">
+          <p class="summary-total"><span>Subtotal · {{ item_count }} {{ 'item' if item_count == 1 else 'items' }}</span><strong>₱{{ '%.2f'|format(total) }}</strong></p>
+          <a class="cart-checkout" href="{{ url_for('shop.checkout') }}">Checkout</a>
+        </div>
       </div>
     {% else %}
-      <div class="panel">
-        <p>Your cart is empty.</p>
-        <a class="button primary" href="{{ url_for('shop.products') }}">Browse products</a>
+      <div class="cart-empty">
+        <p>Your basket is empty.</p>
+        <a class="cart-checkout" href="{{ url_for('shop.products') }}">Browse products</a>
       </div>
     {% endif %}
   </section>

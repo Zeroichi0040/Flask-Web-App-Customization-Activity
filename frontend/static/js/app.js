@@ -1,6 +1,8 @@
 import {
   api
 } from './api-client.js';
+import './cart-drawer.js';
+import './form-validation.js';
 document.documentElement.classList.add('js');
 
 const menu = document.querySelector('.menu-toggle');
@@ -18,6 +20,7 @@ if (menu && sidebar) {
     else if (restoreFocus) menu.focus();
   };
   setMenu(false);
+  requestAnimationFrame(() => requestAnimationFrame(() => sidebar.classList.add('is-ready')));
   menu.addEventListener('click', () => setMenu(menu.getAttribute('aria-expanded') !== 'true'));
   sidebar.querySelector('.sidebar-close')?.addEventListener('click', () => setMenu(false, true));
   smallScreen.addEventListener('change', () => setMenu(false));

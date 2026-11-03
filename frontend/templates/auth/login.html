@@ -3,20 +3,22 @@
 {% block title %}Sign in{% endblock %}
 {% block content %}
   <section class="auth-layout">
-    <div>
+    <div class="auth-intro">
       <span class="pill">WELCOME BACK</span>
       <h1>Your sweet tooth called. It missed you.</h1>
       <p class="lead">Sign in and we'll keep your basket warm while you finish your order.</p>
+      <img class="auth-art" src="{{ url_for('static', filename='images/home/macaron-vanilla.png') }}" alt="" width="160" height="160">
     </div>
-    <form class="panel form-stack" method="post">
-      <h2>Sign in</h2>
+    <form class="panel form-stack form-card" method="post" data-validate-form data-loading-text="Signing in…">
+      <h2 class="form-title">Sign in</h2>
       {{ form.hidden_tag() }}
-      {{ field(form.email, autocomplete='email') }}
-      {{ field(form.password, autocomplete='current-password') }}
-      {{ form.submit(class_='button primary full') }}{% if password_reset_enabled %}
-      <p><a href="{{ url_for('auth.forgot_password') }}">Forgot your password?</a> Well send a little rescue.</p>
-{% endif %}
-<p class="hint">New here? <a href="{{ url_for('auth.register_page') }}">Create an account</a> and join the fairytale.</p>
-</form>
-</section>
+      {{ field(form.email, autocomplete='email', validate='email', type='email', inputmode='email') }}
+      {{ field(form.password, autocomplete='current-password', validate='password') }}
+      {% if password_reset_enabled %}
+        <p class="form-aside"><a href="{{ url_for('auth.forgot_password') }}">Forgot your password?</a> We'll send a little rescue.</p>
+      {% endif %}
+      {{ form.submit(class_='button primary full') }}
+      <p class="form-footer">New here? <a href="{{ url_for('auth.register_page') }}">Create an account</a> and join the fairytale.</p>
+    </form>
+  </section>
 {% endblock %}

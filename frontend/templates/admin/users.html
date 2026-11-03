@@ -5,10 +5,11 @@
   <header class="page-heading">
     <div>
       <p class="eyebrow">ADMINISTRATION</p>
-      <h1>Accounts</h1>
+      <h1>Accounts{% if pagination.total %} <small>({{ pagination.total }})</small>{% endif %}</h1>
+      <p>Everyone who can sign in to the site.</p>
     </div>
   </header>
-  <div class="panel table-wrap">
+  <div class="panel table-wrap data-table">
     <table>
       <caption class="sr-only">Registered accounts</caption>
       <thead>
@@ -23,12 +24,12 @@
       <tbody>
         {% for user in pagination.items %}
           <tr>
-            <td>{{ user.display_name }}</td>
-            <td>{{ user.email }}</td>
-            <td>{{ user.role }}</td>
-            <td>{{ 'Active' if user.active else 'Inactive' }}</td>
-            <td>
-              <a href="{{ url_for('admin.edit_user',user_id=user.id) }}">Edit</a>
+            <td data-label="Name"><strong>{{ user.display_name }}</strong></td>
+            <td data-label="Email">{{ user.email }}</td>
+            <td data-label="Role">{{ user.role|capitalize }}</td>
+            <td data-label="Status"><span class="status-pill {{ 'status-completed' if user.active else 'status-cancelled' }}">{{ 'Active' if user.active else 'Inactive' }}</span></td>
+            <td data-label="Manage">
+              <a class="button quiet small" href="{{ url_for('admin.edit_user',user_id=user.id) }}" aria-label="Edit {{ user.display_name }}">Edit</a>
             </td>
           </tr>
         {% endfor %}

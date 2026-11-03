@@ -1,0 +1,417 @@
+/* ==========================================================================
+   Forms: checkout, sign in, register, contact, password reset.
+   Everything here is scoped to .form-card so admin forms are unaffected.
+   Loaded after app.css.
+   ========================================================================== */
+
+:root {
+  --field-border: #e3b9c4;
+  --field-border-hover: #d39aab;
+  --focus-ring: rgb(255 136 182 / .28);
+  --danger-ink: #c2223d;
+  --danger-bg: #fff5f6;
+  --valid: #3fa37c;
+}
+
+/* ---- Card ---- */
+.form-card {
+  border-radius: 20px;
+  box-shadow: 0 1px 0 #fff inset, 0 18px 40px -24px rgb(79 52 43 / .35);
+}
+
+.form-card .form-title {
+  margin: 0 0 4px;
+  font-size: 1.6rem;
+}
+
+/* ---- Labels ---- */
+.form-card .field > label {
+  font-size: .85rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+/* ---- Inputs ---- */
+.form-card .input {
+  min-height: 48px;
+  padding: 12px 14px;
+  border: 1.5px solid var(--field-border);
+  border-radius: 12px;
+  background: #fff;
+  transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
+}
+
+.form-card .input::placeholder {
+  color: #a8999a;
+  opacity: 1;
+}
+
+.form-card .input:hover {
+  border-color: var(--field-border-hover);
+}
+
+.form-card .input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 4px var(--focus-ring);
+  outline: 2px solid transparent; /* keeps a visible focus ring in forced-colors mode */
+}
+
+.form-card textarea.input {
+  min-height: 120px;
+  line-height: 1.5;
+}
+
+.form-card .input.is-valid {
+  border-color: var(--valid);
+}
+
+.form-card .input[aria-invalid="true"] {
+  border-color: var(--danger);
+  background: var(--danger-bg);
+}
+
+.form-card .input[aria-invalid="true"]:focus {
+  box-shadow: 0 0 0 4px rgb(255 75 102 / .2);
+}
+
+/* ---- Hints, counters, errors ---- */
+.form-card .field-hint {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 2px 12px;
+}
+
+.form-card .field-hint:empty {
+  display: none;
+}
+
+.form-card .field-hint .hint {
+  margin: 7px 0 0;
+}
+
+.form-card .field-counter {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.form-card .field-error {
+  flex: 1 0 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin: 7px 0 0;
+  color: var(--danger-ink);
+  font-size: .82rem;
+  line-height: 1.4;
+}
+
+.form-card .field-error::before {
+  content: "!";
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  margin-top: 1px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--danger-ink);
+  color: #fff;
+  font-size: .68rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* ---- Password show/hide ---- */
+.input-wrap {
+  position: relative;
+}
+
+.input-wrap .input {
+  padding-right: 68px;
+}
+
+.input-toggle {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  min-height: 34px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font-size: .78rem;
+  font-weight: 650;
+}
+
+.input-toggle:hover {
+  background: #fdeef2;
+  color: var(--ink);
+}
+
+/* ---- Buttons ---- */
+.form-card .button.primary {
+  min-height: 50px;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 4px 0 #4f342b26, 0 12px 20px -10px #4f342b66;
+  font-size: .95rem;
+  transition: background-color .2s ease, box-shadow .2s ease, transform .2s ease;
+}
+
+.form-card .button.primary:hover {
+  background: #86d9ec;
+}
+
+.form-card .button.primary:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #4f342b26;
+}
+
+.form-card .button.primary:disabled {
+  cursor: progress;
+  opacity: .75;
+  transform: none;
+}
+
+.form-card .button[aria-busy="true"]::after {
+  content: "";
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: form-spin .7s linear infinite;
+}
+
+@keyframes form-spin { to { transform: rotate(360deg); } }
+
+/* ---- Small copy under forms ---- */
+.form-aside,
+.form-footer {
+  margin: 0;
+  color: var(--muted);
+  font-size: .85rem;
+}
+
+.form-footer {
+  padding-top: 16px;
+  border-top: 1px dashed var(--field-border);
+  text-align: center;
+}
+
+.form-aside a,
+.form-footer a {
+  color: var(--ink);
+  font-weight: 650;
+}
+
+/* ==========================================================================
+   Sign in / register / contact layout
+   ========================================================================== */
+.auth-layout {
+  align-items: center;
+}
+
+.auth-intro {
+  position: relative;
+}
+
+.auth-layout h1 {
+  margin-bottom: 16px;
+  text-wrap: balance;
+}
+
+.auth-intro .lead {
+  margin-bottom: 0;
+}
+
+.auth-art {
+  display: block;
+  width: clamp(110px, 14vw, 170px);
+  height: auto;
+  margin-top: 28px;
+  filter: drop-shadow(0 14px 14px rgb(79 52 43 / .18));
+  animation: auth-float 5s ease-in-out infinite;
+}
+
+@keyframes auth-float {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50% { transform: translateY(-8px) rotate(3deg); }
+}
+
+.auth-layout .form-card {
+  margin-bottom: 0;
+}
+
+.narrow-form {
+  max-width: 520px;
+}
+
+.narrow-form .back-link {
+  margin: 4px 0 0;
+}
+
+@media (max-width: 800px) {
+  .auth-art { display: none; }
+  .auth-layout { margin-top: 8px; }
+}
+
+/* ==========================================================================
+   Checkout
+   ========================================================================== */
+.checkout {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.checkout-heading {
+  max-width: 44rem;
+  margin: 0 0 32px;
+}
+
+.checkout-heading h1 {
+  margin-bottom: 12px;
+  text-wrap: balance;
+  font-size: clamp(2rem, 4.2vw, 3.2rem);
+}
+
+.checkout-heading .lead {
+  margin: 0;
+}
+
+.checkout-layout {
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: 32px;
+}
+
+.checkout-form,
+.order-summary {
+  margin-bottom: 0;
+}
+
+.checkout-form {
+  padding: clamp(20px, 3.5vw, 36px);
+  gap: 20px;
+}
+
+.checkout-form .form-grid {
+  gap: 20px;
+}
+
+.checkout-form .button.primary {
+  margin-top: 6px;
+}
+
+/* Summary card */
+.order-summary {
+  position: sticky;
+  top: 24px;
+  padding: clamp(20px, 3vw, 28px);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 18px 40px -28px rgb(79 52 43 / .35);
+}
+
+.order-summary h3 {
+  margin-bottom: 8px;
+  font-size: 1.25rem;
+}
+
+.order-summary .summary-list {
+  margin-bottom: 8px;
+}
+
+.order-summary .summary-list li {
+  align-items: center;
+  gap: 14px;
+  padding: 14px 0;
+}
+
+.order-summary .summary-list li:last-child {
+  border-bottom: 0;
+}
+
+.summary-thumb {
+  position: relative;
+  flex: 0 0 auto;
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  background: var(--accent-soft);
+}
+
+.summary-thumb img {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  object-fit: cover;
+}
+
+.summary-thumb img.is-icon {
+  padding: 14px;
+  object-fit: contain;
+}
+
+.summary-qty {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fff;
+  font-size: .72rem;
+  font-weight: 650;
+  line-height: 1;
+}
+
+.summary-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-weight: 600;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.summary-name small {
+  display: block;
+  margin-top: 2px;
+  font-weight: 400;
+}
+
+.summary-price {
+  flex: 0 0 auto;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.order-summary .summary-total {
+  align-items: baseline;
+  margin: 8px 0 18px;
+  padding-top: 18px;
+  border-top: 1px dashed var(--field-border);
+}
+
+.order-summary .summary-total strong {
+  font-size: 1.5rem;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 800px) {
+  .order-summary { position: static; }
+  /* minmax(0, …) stops long names or prices from widening the track */
+  .checkout-layout { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+}
+
+@media (max-width: 540px) {
+  .checkout-form .form-grid { grid-template-columns: 1fr; }
+}

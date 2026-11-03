@@ -3,21 +3,22 @@
 {% block title %}Contact{% endblock %}
 {% block content %}
   <section class="auth-layout">
-    <div>
+    <div class="auth-intro">
       <p class="eyebrow">CONTACT</p>
       <h1>Send us a little magic.</h1>
       <p class="lead">Questions, custom cake dreams, or just want to say hi? Drop us a note and our bakers will fly a reply your way.</p>
+      <img class="auth-art" src="{{ url_for('static', filename='images/home/eclair.png') }}" alt="" width="180" height="180">
     </div>
-    <form class="panel form-stack" method="post">
+    <form class="panel form-stack form-card" method="post" data-validate-form data-loading-text="Sending…">
       {{ form.hidden_tag() }}
-      {{ field(form.name, autocomplete='name') }}
-      {{ field(form.email, autocomplete='email') }}
-      {{ field(form.message) }}
+      {{ field(form.name, autocomplete='name', validate='name', maxlength=100) }}
+      {{ field(form.email, autocomplete='email', validate='email', type='email', inputmode='email') }}
+      {{ field(form.message, validate='message', maxlength=2000, rows=6) }}
       <div class="honeypot" aria-hidden="true">
         {{ form.website.label }}
         {{ form.website(tabindex='-1', autocomplete='off') }}
       </div>
-      {{ form.submit(class_='button primary') }}
+      {{ form.submit(class_='button primary full') }}
     </form>
   </section>
 {% endblock %}

@@ -4,42 +4,70 @@
 {% block content %}
   <header class="page-heading">
     <div>
-      <p class="eyebrow">ADMINISTRATION</p>
-      <h1>Orders</h1>
+      <p class="eyebrow">SALES</p>
+      <h1>Orders{% if pagination.total %} <small>({{ pagination.total }})</small>{% endif %}</h1>
       <p>Review customer orders and update their progress.</p>
     </div>
   </header>
-  {% for order in pagination.items %}
-    <article class="panel inquiry order-card">
-      <header>
-        <div>
-          <h2>Order #{{ order.id }}</h2>
-          <p>{{ order.full_name }} · {{ order.email }} · {{ order.created_at|date_label }}</p>
+
+  <div class="admin-orders">
+    {% for order in pagination.items %}
+      {% set form = status_forms[order.id] %}
+      {% set item_count = order['items']|sum(attribute='quantity') %}
+      <article class="admin-order" aria-labelledby="order-{{ order.id }}-title">
+        <header class="admin-order__head">
+          <div>
+            <h2 id="order-{{ order.id }}-title">Order #{{ order.id }}</h2>
+            <p class="admin-order__meta">Placed {{ order.created_at|date_label }} · {{ item_count }} {{ 'item' if item_count == 1 else 'items' }}</p>
+          </div>
+          <span class="status-pill status-{{ order.status }}">{{ order.status|replace('_', ' ')|capitalize }}</span>
+        </header>
+
+        <div class="admin-order__body">
+          <section class="admin-order__customer" aria-label="Customer">
+            <h3>Customer</h3>
+            <p class="admin-order__name">{{ order.full_name }}</p>
+            <p><a href="mailto:{{ order.email }}">{{ order.email }}</a></p>
+            {% if order.phone %}<p><a href="tel:{{ order.phone }}">{{ order.phone }}</a></p>{% endif %}
+            <h3>Deliver to</h3>
+            <p>{{ order.address }}, {{ order.city }}</p>
+            {% if order.notes %}
+              <h3>Note from customer</h3>
+              <p class="admin-order__note preserve-lines">{{ order.notes }}</p>
+            {% endif %}
+          </section>
+
+          <section class="admin-order__items" aria-label="Items ordered">
+            <h3>Items</h3>
+            <ul class="admin-order__lines">
+              {% for item in order['items'] %}
+                <li>
+                  <span class="admin-order__qty">{{ item.quantity }}×</span>
+                  <span class="admin-order__product">
+                    {{ item.product_name }}
+                    {% if item.variation_label %}<small>{{ item.variation_label }}</small>{% endif %}
+                  </span>
+                  <span class="admin-order__amount">₱{{ '%.2f'|format(item.subtotal) }}</span>
+                </li>
+              {% endfor %}
+            </ul>
+            <p class="admin-order__total"><span>Total</span><strong>₱{{ '%.2f'|format(order.total) }}</strong></p>
+          </section>
         </div>
-        <span class="label-tag">{{ order.status|replace('_', ' ')|title }}</span>
-      </header>
-      <p>{{ order.address }}, {{ order.city }}{% if order.phone %} · {{ order.phone }}{% endif %}</p>
-      {% if order.notes %}<p class="preserve-lines">{{ order.notes }}</p>{% endif %}
-      <ul class="summary-list">
-        {% for item in order.items %}
-          <li>
-            <span>{{ item.product_name }}{% if item.variation_label %} ({{ item.variation_label }}){% endif %} × {{ item.quantity }}</span>
-            <span>₱{{ '%.2f'|format(item.subtotal) }}</span>
-          </li>
-        {% endfor %}
-      </ul>
-      <p class="summary-total"><span>Total</span><strong>₱{{ '%.2f'|format(order.total) }}</strong></p>
-      <form class="actions" method="post" action="{{ url_for('admin.update_order_status', order_id=order.id) }}">
-        {{ status_forms[order.id].hidden_tag() }}
-        {{ status_forms[order.id].status(class_='form-control') }}
-        {{ status_forms[order.id].submit(class_='button quiet') }}
-      </form>
-    </article>
-  {% else %}
-    <section class="empty-state">
-      <h2>No orders yet.</h2>
-      <p>Orders placed through checkout will appear here.</p>
-    </section>
-  {% endfor %}
+
+        <form class="admin-order__foot" method="post" action="{{ url_for('admin.update_order_status', order_id=order.id) }}">
+          {{ form.hidden_tag() }}
+          {{ form.status.label(class_='admin-order__label') }}
+          {{ form.status(class_='input') }}
+          {{ form.submit(class_='button primary') }}
+        </form>
+      </article>
+    {% else %}
+      <section class="empty-state">
+        <h2>No orders yet.</h2>
+        <p>Orders placed through checkout will appear here.</p>
+      </section>
+    {% endfor %}
+  </div>
   {{ pager(pagination) }}
 {% endblock %}

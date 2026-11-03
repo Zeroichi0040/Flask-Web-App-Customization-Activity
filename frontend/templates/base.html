@@ -9,6 +9,7 @@
     <link rel="icon" href="{{ url_for('static', filename='images/favicon.svg') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/forms.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/customer-orders.css') }}">
     <script type="module" src="{{ url_for('static', filename='js/app.js') }}"></script>
   </head>
@@ -39,7 +40,7 @@
           </a>
           <div class="topbar-actions">
             {% set cart_href = url_for('shop.cart') if current_user.is_authenticated else url_for('auth.login_page', next=url_for('shop.cart')) %}
-            <a class="cart-icon" href="{{ cart_href }}"
+            <a class="cart-icon" href="{{ cart_href }}"{% if current_user.is_authenticated %} data-cart-open aria-haspopup="dialog"{% endif %}
                aria-label="Cart{% if cart_count %}, {{ cart_count }} items{% endif %}{% if not current_user.is_authenticated %} (sign in required){% endif %}">
               <img class="basket-icon" src="{{ url_for('static', filename='images/icons/basket.svg') }}" alt="">
               {% if cart_count %}<span class="basket-number" aria-hidden="true">{{ cart_count }}</span>{% endif %}
@@ -97,10 +98,11 @@
       <button class="cart-drawer__backdrop" type="button" data-cart-close aria-label="Close cart"></button>
       <aside class="cart-drawer__panel" role="dialog" aria-modal="true" aria-labelledby="cart-drawer-title" tabindex="-1">
         <header class="cart-drawer__header">
-          <h2 id="cart-drawer-title">Your basket</h2>
+          <h2 id="cart-drawer-title">Your basket <span class="cart-drawer__count" id="cart-drawer-count"></span></h2>
           <button class="cart-drawer__close" type="button" data-cart-close aria-label="Close cart">&times;</button>
         </header>
-        <div class="cart-drawer__body"><div id="cart-drawer-content"><p>Loading your basket...</p></div></div>
+        <div class="cart-drawer__body"><div id="cart-drawer-content"><p class="cart-drawer__status">Loading your basket...</p></div></div>
+        <p class="sr-only" id="cart-live" role="status" aria-live="polite"></p>
       </aside>
     </div>
   </body>

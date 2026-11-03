@@ -2,14 +2,14 @@
 {% from 'components/forms.html' import field %}
 {% block title %}Reset password{% endblock %}
 {% block content %}
-  <section class="narrow">
+  <section class="narrow narrow-form">
     <p class="eyebrow">ACCOUNT ACCESS</p>
     <h1>Reset your password</h1>
-    <form class="panel form-stack" method="post">
+    <form class="panel form-stack form-card" method="post" data-validate-form data-loading-text="Sending…">
       {{ form.hidden_tag() }}
-      {{ field(form.email,autocomplete='email') }}
-      {{ form.submit(class_='button primary') }}
+      {{ field(form.email, autocomplete='email', validate='email', type='email', inputmode='email') }}
+      {{ form.submit(class_='button primary full') }}
     </form>
-    <a href="{{ url_for('auth.login_page') }}">Back to sign in</a>
+    <a class="back-link" href="{{ url_for('auth.login_page') }}">← Back to sign in</a>
   </section>
 {% endblock %}

@@ -1,16 +1,43 @@
-{% macro field(input, help='', autocomplete='', accept='') %}
+{#
+  field(input, ...) renders a label, the control, a hint and any errors.
+
+  label        Override the label text (otherwise the form's own label is used).
+  placeholder  Placeholder text for text inputs and textareas.
+  validate     Client-side rule name, see static/js/form-validation.js
+               (fullname, name, email, phone, address, city, notes, message,
+               password, password-new, confirm).
+  type         Override the input type (e.g. 'tel').
+  inputmode    Virtual keyboard hint (e.g. 'tel', 'email').
+  maxlength    Maximum characters; textareas also get a live counter.
+  rows         Textarea rows (default 5).
+#}
+{% macro field(input, help='', autocomplete='', accept='', label='', placeholder='', validate='', type='', inputmode='', maxlength='', rows='') %}
+  {% set attrs = {'class_': 'input', 'aria_describedby': input.id ~ '-hint'} %}
+  {% if autocomplete %}{% set _ = attrs.update(autocomplete=autocomplete) %}{% endif %}
+  {% if placeholder %}{% set _ = attrs.update(placeholder=placeholder) %}{% endif %}
+  {% if validate %}{% set _ = attrs.update(data_validate=validate) %}{% endif %}
+  {% if type %}{% set _ = attrs.update(type=type) %}{% endif %}
+  {% if inputmode %}{% set _ = attrs.update(inputmode=inputmode) %}{% endif %}
+  {% if maxlength %}{% set _ = attrs.update(maxlength=maxlength) %}{% endif %}
+  {% if input.errors %}{% set _ = attrs.update(aria_invalid='true') %}{% endif %}
   <div class="field">
-    {{ input.label }}
-    {% if input.type == "TextAreaField" %}{{ input(class_='input',rows=5,aria_describedby=input.id ~ '-hint') }}
-    {% elif input.type == "FileField" %}{{ input(class_='input',accept=accept,aria_describedby=input.id ~ '-hint') }}
-{% else %}{{ input(class_='input',autocomplete=autocomplete,aria_describedby=input.id ~ '-hint') }}{% endif %}
-<div id="{{ input.id }}-hint">
-  {% if help %}
-    <small class="hint">{{ help }}</small>
-  {% endif %}
-  {% for error in input.errors %}
-    <p class="field-error" role="alert">{{ error }}</p>
-  {% endfor %}
-  </div>
+    {{ input.label(text=label) if label else input.label }}
+    {% if input.type == "TextAreaField" %}
+      {% set _ = attrs.update(rows=rows or 5) %}
+      {{ input(**attrs) }}
+    {% elif input.type == "FileField" %}
+      {% set _ = attrs.update(accept=accept) %}
+      {{ input(**attrs) }}
+    {% else %}
+      {{ input(**attrs) }}
+    {% endif %}
+    <div id="{{ input.id }}-hint" class="field-hint">
+      {% if help %}
+        <small class="hint">{{ help }}</small>
+      {% endif %}
+      {% for error in input.errors %}
+        <p class="field-error" role="alert">{{ error }}</p>
+      {% endfor %}
+    </div>
   </div>
 {% endmacro %}
