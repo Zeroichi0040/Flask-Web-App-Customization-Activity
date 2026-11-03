@@ -3,7 +3,7 @@ from flask import Blueprint, flash, redirect, render_template, request, url_for
 from backend.extensions import limiter
 from backend.modules.public.forms import ContactForm
 from database import db
-from database.models import Inquiry
+from database.models import Inquiry, ProductsRecord
 from database.models.page import Page
 
 bp = Blueprint("public", __name__)
@@ -14,7 +14,10 @@ def home():
     pages = db.session.scalars(
         db.select(Page).where(Page.published.is_(True)).order_by(Page.updated_at.desc()).limit(12)
     ).all()
-    return render_template("public/home.html", pages=pages)
+    featured_products = db.session.scalars(
+        db.select(ProductsRecord).order_by(ProductsRecord.created_at.desc(), ProductsRecord.id.desc()).limit(5)
+    ).all()
+    return render_template("public/home.html", pages=pages, featured_products=featured_products)
 
 
 @bp.get("/pages/<slug>")
