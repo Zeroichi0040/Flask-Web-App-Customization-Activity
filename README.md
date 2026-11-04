@@ -1,106 +1,174 @@
-# Flask Fullstack Framework
+# Pastrydale
 
-A reusable application framework built on **Flask**, with a real Python backend,
-SQL database, server-rendered frontend, and browser JavaScript client.
+> *Every bite is a fairytale.*
 
-The framework is `backend/framework/`. Your application modules are in
-`backend/modules/`. Declare a resource once: the framework creates its forms,
-HTML CRUD pages, JSON CRUD API, authorization, validation, pagination, search,
-CSV export, navigation, transactions, version checks, and OpenAPI documentation.
+Pastrydale is a bakery storefront prototype. Customers browse treats that are stored in the database, pick an option such as "Box of 6", add items to a cart, and place a delivery order. Bakery staff manage the products, orders, customer messages, accounts and website pages from an admin area.
 
-## Open it
+It is a **CS111 Startup Simulation** project. It is an educational prototype: **no payment is collected, no real orders are fulfilled, and all business figures are hypothetical.**
 
-Extract the ZIP into a new folder and open **OPEN_ME_FIRST.html**.
+*Last updated: 2026-11-04. This document describes the code in the project archive `Flask-Web-App-Customization-Activity`.*
 
-| System | First setup | Start |
+---
+
+## Features
+
+### For customers
+
+| Feature | What it does |
+| --- | --- |
+| Home page | Hero banner, the five newest products from the database, a story section, and any published website pages |
+| Product catalog | Public product list and product pages with a photo gallery, subheading, description and up to four priced options |
+| Accounts | Register, sign in, sign out, change name and password, "forgot password" reset link |
+| Cart | Add products with a chosen option, change quantities (1 to 99), remove items, slide-out cart drawer |
+| Checkout | Delivery details form with in-browser validation, then a saved order |
+| My Orders | List of the customer's own orders and an order page with a progress tracker (Placed, Preparing, Out for delivery, Completed) |
+| Contact page | Message form saved for the admins, with spam protection |
+| Mobile friendly | Layouts, hamburger menu and cart drawer adapt to phones and tablets |
+
+### For administrators
+
+| Feature | What it does |
+| --- | --- |
+| Manage products | Create, edit, delete and search products; cover photo, up to 5 extra photos, up to 4 priced options; CSV export |
+| Orders | View every order with customer details and items, and update its status |
+| Messages | Read contact-form messages and mark them resolved |
+| Accounts | Change a person's role (member or administrator) or deactivate the account |
+| Website pages | Write pages and publish or unpublish them at a public URL |
+| Audit log | Record of important admin actions, such as order status changes |
+
+### Platform (inherited from the starter framework)
+
+CSRF protection, scrypt password hashing, rate limiting, security headers, database migrations, optimistic version locking, health-check endpoints, a JSON API with OpenAPI docs, and SQLite or PostgreSQL support. See [System documentation](docs/SYSTEM_DOCUMENTATION.md) for details.
+
+---
+
+## Technology
+
+| Area | Tools |
+| --- | --- |
+| Language | Python 3.11 to 3.14 (3.12 or 3.13 recommended) |
+| Web framework | Flask 3.1 with Blueprints |
+| Database | SQLite by default; PostgreSQL optional. SQLAlchemy 2.1 and Alembic migrations (Flask-SQLAlchemy, Flask-Migrate) |
+| Accounts and forms | Flask-Login, Flask-WTF and WTForms, email-validator, Flask-Limiter |
+| Images | Pillow (validation, metadata removal) |
+| Frontend | Jinja2 templates, plain CSS, plain JavaScript modules. **No Node.js or build step.** |
+| Fonts | Lexend and East Botany, served from the project |
+| Server | Waitress (local), Gunicorn (Linux hosting) |
+| Testing and quality | pytest, Ruff, pip-audit |
+| Delivery | GitHub Actions CI, Dockerfile and Docker Compose, Render and PythonAnywhere files |
+
+Exact versions are pinned in `requirements.txt`.
+
+---
+
+## Setup and run
+
+You need **Python 3.11 to 3.14** and an internet connection for the first setup. Extract or clone the project first.
+
+### Windows
+
+```powershell
+.\SETUP_WINDOWS.bat      # first time only: creates .venv, installs packages, creates .env, builds the database
+.\START_WEBSITE.bat      # starts the website
+```
+
+If Windows says Python is missing, run `py install 3.13` and try again, or run `py -3.13 scripts\bootstrap.py`.
+
+### macOS / Linux
+
+```sh
+bash setup.sh     # first time only
+bash start.sh
+```
+
+Open **http://127.0.0.1:5000**. Keep the terminal open; press **Ctrl+C** to stop.
+
+### What setup does
+
+1. Creates a private virtual environment in `.venv`
+2. Installs the packages in `requirements.txt`
+3. Creates `.env` with a unique random `SECRET_KEY` (see [Configuration](#configuration))
+4. Applies every database migration (`python manage.py db upgrade`), which creates `database/data/application.sqlite3`
+5. Checks that the application is ready
+
+Running setup again keeps your existing `.env` and data.
+
+---
+
+## First-time use (important for demos)
+
+A fresh install has **no accounts and no products**. Do this once:
+
+1. **Create an administrator.** In a terminal inside the project folder:
+   - Windows: `.venv\Scripts\python.exe manage.py create-admin`
+   - macOS / Linux: `.venv/bin/python manage.py create-admin`
+
+   It asks for your email, a display name and a password of 12 to 128 characters. No default account exists.
+2. **Sign in** at `/auth/login` and open **Manage products** (`/app/products`).
+3. **Add products.** Give each a name, price and photo. Optionally add a subheading, up to four options (for example "Box of 5", "Box of 10") and extra photos.
+4. **Create a customer account** (a second browser or a private window) at `/auth/register`.
+
+## Demo walkthrough
+
+A suggested path for Demo Day (about 5 minutes):
+
+1. Home page: show the newest products, then resize the browser to show the mobile layout.
+2. Open a product, choose an option, and press **Add to basket** (as a signed-in customer).
+3. Open the cart drawer, change a quantity, then press **Checkout**.
+4. On the checkout form, submit it empty to show validation messages, then fill it in and press **Place order**.
+5. Open **My Orders** to show the new order and its progress tracker.
+6. In the admin window, open **Orders** and change the status to **Preparing**.
+7. Back as the customer, refresh the order page: the tracker moves forward.
+8. Show **Messages** (send one from the Contact page first) and **Audit log**.
+
+---
+
+## Configuration
+
+Settings live in `.env` (created by setup, never committed). `.env.example` shows every option.
+
+| Setting | Default | Purpose |
 | --- | --- | --- |
-| Windows PowerShell | `.\SETUP_WINDOWS.bat` | `.\START_WEBSITE.bat` |
-| macOS / Linux | `bash setup.sh` | `bash start.sh` |
+| `APP_ENV` | `development` | `development`, `testing` or `production` |
+| `APP_NAME`, `APP_TAGLINE` | Pastrydale, Every bite is a fairytale | Shown in the site |
+| `SECRET_KEY` | generated | Signs sessions. Production needs 32 or more characters |
+| `DATABASE_URL` | empty | Empty means SQLite at `database/data/application.sqlite3`. Use `postgresql+psycopg://...` for PostgreSQL |
+| `SIGNUP_ENABLED` | `true` | Set `false` to close registration |
+| `MAIL_TRANSPORT` | `outbox` | `outbox` writes reset emails to `instance/outbox`, `smtp` sends real email, `disabled` sends none |
 
-Use Python **3.12 or 3.13**. Supported range: 3.11–3.14. If Windows says the runtime
-is missing, run `py install 3.13`, then retry setup. Alternatively, run
-`py -3.13 scripts\bootstrap.py` directly. First installation needs internet.
+**Never upload `.env`, `.venv`, `database/data/*.sqlite3`, `instance/` or `database/backups/` to GitHub or share them.** `.gitignore` already excludes them.
 
-Open **http://127.0.0.1:5000**. Create your own account; none is preinstalled.
-Stop with Ctrl+C. The local launcher uses Waitress, with debug mode off.
+## Database
 
-## What is included
+- **Engine:** SQLite file by default, PostgreSQL if `DATABASE_URL` is set.
+- **Schema:** defined by SQLAlchemy models in `database/models/` and built by the migrations in `database/migrations/versions/`. No separate SQL file is needed.
+- **Create or update the database:** `python manage.py db upgrade` (setup runs this for you).
+- **Reset to empty:** stop the site, delete `database/data/application.sqlite3`, run `python manage.py db upgrade`, then create the administrator again.
+- **Back up (SQLite):** `python manage.py backup-db`
+- **PostgreSQL for local testing:** `docker compose up` starts PostgreSQL and the app (see `compose.yaml`).
 
-| Layer | Working capability |
-| --- | --- |
-| Frontend | Responsive layouts, reusable components, forms, tables, detail views, mobile navigation, and a JavaScript API client |
-| Framework | Declarative `Resource` / `Field` API, HTML/API route generation, common validation, policies, lifecycle hooks, generated navigation and OpenAPI |
-| Accounts | Registration, login, POST logout, profile/password changes, expiring reset links, hashed passwords, session revocation |
-| Access | Owner-only resources and administrator-only shared resources; the same policy applies to HTML, JSON, reads, writes, and exports |
-| Database | SQLAlchemy models, SQLite locally, PostgreSQL support, Alembic migrations, foreign keys, transactions, optimistic version locking |
-| Content | Administrator-managed website pages, private drafts, publish/unpublish, real public URLs loaded from the database |
-| Files | Private verified images, quotas, authenticated downloads, upload/delete via forms and API; small images persist in the database |
-| Administration | Account activation and roles, contact messages, audit events, owner-console admin creation and password reset |
-| Operations | Environment validation, security headers, CSRF, rate limits, migration readiness, request IDs, SQLite backups, WSGI/Gunicorn, Docker and CI |
+Tables: `users`, `products`, `product_variations`, `product_images`, `cart_items`, `orders`, `order_items`, `inquiries`, `pages`, `notes`, `attachments`, `audit_events`, `site_state`. The diagram is in [System documentation](docs/SYSTEM_DOCUMENTATION.md#5-data-model).
 
-The Notes module is a small example of the public resource API. The page publisher
-uses the same engine with an administrator policy. Both are normal modules that
-you can replace or extend without rewriting the framework.
+## Project structure
 
-## Create your application feature
-
-Activate `.venv` first, or substitute `.venv\Scripts\python.exe` on Windows and
-`.venv/bin/python` on macOS/Linux for `python`.
-
-```sh
-python manage.py make-resource products --field name:text --field price:decimal --field stock:integer --field available:boolean
-python manage.py db migrate -m "Add products"
-# Open and review the new migration, then:
-python manage.py db upgrade
+```
+frontend/            Jinja2 pages, CSS, JavaScript, images, fonts
+  templates/         shop/, auth/, admin/, account/, public/, components/, framework/
+  static/css/        tokens.css, app.css, forms.css, customer-orders.css, admin.css
+  static/js/         app.js, cart-drawer.js, form-validation.js, api-client.js
+backend/
+  modules/           shop, public, auth, account, admin, dashboard, files, api, health, products, pages, notes
+  framework/         generic resource engine (forms, CRUD routes, policies, OpenAPI)
+  common/            shared forms, errors, security helpers
+database/
+  models/            SQLAlchemy models
+  migrations/        Alembic migration history
+scripts/             setup, production start-up, resource generator
+tests/               automated tests (pytest)
+docs/                documentation
 ```
 
-Restart. **`/app/products`** is its working frontend. **`/api/v1/products`** is its
-working API. Its navigation link and OpenAPI schema are registered automatically.
-The generator also writes an integration test, model, business-rule hook, and
-frontend template extension. It refuses unsafe names and existing files.
-
-Edit the generated model in `database/models/`, field contract in
-`backend/modules/products/resource.py`, rules in `service.py`, and frontend in
-`frontend/templates/products/`. See [Build a feature](docs/BUILD_A_FEATURE.md).
-
-## Easy directory navigation
-
-| Folder | What belongs here |
-| --- | --- |
-| `frontend/` | HTML/Jinja pages, shared components, CSS, JavaScript, images |
-| `backend/framework/` | Reusable engine; application factory, definitions, policies, forms, services, generated routes, OpenAPI |
-| `backend/modules/` | Your domain modules and built-in account/admin/content/file modules |
-| `database/` | Models, migrations, private local data and backups |
-| `scripts/` | Installer, resource generator, production startup and configuration |
-| `deploy/` | Hosting entry points |
-| `tests/` | Isolated behavior/security/integration tests |
-| `docs/` | Opening, framework API, customization, hosting, operations, verification |
-
-## Useful commands
-
-```sh
-python manage.py create-admin
-python manage.py set-password
-python manage.py resources
-python manage.py routes
-python manage.py check
-python manage.py db check
-python manage.py backup-db
-```
-
-`create-admin` prompts for your own credentials. Sign in normally to manage website
-pages and accounts. Local reset mail is written privately to `instance/outbox`;
-real delivery requires configured SMTP. Production email defaults to disabled,
-with console password reset available at no email-service cost.
-
-## Verify the full request cycle
-
-Create a note through the browser, read it through `/api/v1/notes`, restart the app,
-and confirm it remains. Sign in as another account and confirm it is private.
-As an administrator, publish a website page and open its public URL while signed out.
-These operations connect the frontend, Flask services, and migrated SQL database.
-
-Install optional development tools and run the tests:
+## Testing
 
 ```sh
 python -m pip install -r requirements-dev.txt
@@ -108,29 +176,56 @@ python -m pytest -q
 python -m ruff check .
 ```
 
-Windows also has `RUN_TESTS.bat`. Tests use temporary databases, not your live data.
-See [Validation](docs/VALIDATION.md) for the actual verification record and limits.
+The repository has 76 automated test functions covering accounts, the shop, checkout, orders, product options and photos, admin rules and the framework. Tests use temporary databases and never touch your data. The manual test cases and a results table for the team are in [docs/TEST_PLAN.md](docs/TEST_PLAN.md). **Record real results there; do not copy results from other documents.**
 
-## Cost and deployment
+## Known limitations
 
-Core use requires no paid API, Node build tool, Redis service, cloud account, or
-database subscription. SQLite works locally. Optional Docker Compose starts local
-PostgreSQL. [Free deployment](docs/FREE_DEPLOYMENT.md) covers PythonAnywhere with
-persistent SQLite and a Render + Neon preview deployment. Free hosts have quotas,
-sleep/renewal rules, and availability limits; software architecture does not remove
-those limits or guarantee enterprise hosting reliability.
+This is a prototype. Be upfront about these during the demo:
 
-## Guides
+- **No payment, delivery fee, tax or stock tracking.** Checkout saves the order and clears the cart.
+- **No order confirmation email.** Email is only used for password reset links. After checkout the customer sees a message on the products page.
+- **Customers cannot cancel an order.** Only administrators change statuses, and any status can be set at any time.
+- **Phone format is checked only in the browser.** The server accepts any phone text up to 30 characters (the field is optional).
+- **Shop browsing has no search or categories.** Products are listed alphabetically.
+- **Inherited starter features** (Notes, My images file library, JSON API documentation) are still present and are not part of the bakery product.
+- Rate limits are kept in memory, so they reset when the server restarts. Free hosting plans have their own quotas and sleep rules.
 
-- [Open and run](docs/QUICKSTART.md)
-- [Architecture and directory map](docs/ARCHITECTURE.md)
-- [Framework API](docs/FRAMEWORK_API.md)
-- [Build a feature](docs/BUILD_A_FEATURE.md)
-- [Customize the frontend](docs/FRONTEND.md)
-- [JSON API](docs/API.md)
-- [Free deployment](docs/FREE_DEPLOYMENT.md)
-- [Operations, security settings, backups](docs/OPERATIONS.md)
-- [Validation record](docs/VALIDATION.md)
+The full list is in [System documentation, section 13](docs/SYSTEM_DOCUMENTATION.md#13-known-limitations-and-cleanup-items).
 
-This release initializes a fresh application schema. Never copy a database from
-another application over it; migrate existing data deliberately if you need it.
+## Team
+
+| Name | Role |
+| --- | --- |
+| Adrianna Gomate | Project lead |
+| Ann Joelle Batica | Frontend developer |
+| Prince Lionel Duterte | Feature developer |
+| Mika Rivera | UI and UX designer |
+| Trisha Licmo-an | UI and UX designer |
+| Ritz Gregorio | Content writer |
+| Angelyn Sican | Content writer |
+| Lorraine Badilla | Content writer |
+| Ranille Robles | Content writer |
+| Xander Balili | Content writer |
+| Florido Akut III | Content writer |
+| Gabriel Taran | Content writer |
+| Clark Gayola | Content writer |
+| Candy Abel | Content writer |
+| Kyle Rapirap | QA tester |
+| Shekienah Carrasco | QA tester |
+| Carlos Clemente | QA tester |
+| Justine Filipino | Documentation and demo lead |
+| Servan Duller | Documentation and demo lead |
+
+## Documentation
+
+| Document | Contents |
+| --- | --- |
+| [docs/SYSTEM_DOCUMENTATION.md](docs/SYSTEM_DOCUMENTATION.md) | Architecture, data model, business rules, routes, validation, security, operations, limitations |
+| [docs/TEST_PLAN.md](docs/TEST_PLAN.md) | Manual test cases with result columns for QA, defect log, automated test inventory |
+| [docs/SUBMISSION_CHECKLIST.md](docs/SUBMISSION_CHECKLIST.md) | Final-submission requirements, repository hygiene, contribution evidence log |
+| `docs/QUICKSTART.md`, `ARCHITECTURE.md`, `FRAMEWORK_API.md`, `BUILD_A_FEATURE.md`, `FRONTEND.md`, `API.md`, `OPERATIONS.md`, `FREE_DEPLOYMENT.md` | Guides for the starter framework this project is built on |
+| `docs/VALIDATION.md` | The **starter framework's own** verification record. It is not Pastrydale's test report |
+
+## Credits
+
+Pastrydale was built on the *Flask Fullstack Framework* starter ([github.com/franku69/Flask-Stack-Webapp](https://github.com/franku69/Flask-Stack-Webapp)). The Pastrydale work added the product catalog (options, photos, subheadings), cart, checkout, customer and admin order management, the storefront design and the browser-side form validation. Third-party software notices are in `THIRD_PARTY.md`.
